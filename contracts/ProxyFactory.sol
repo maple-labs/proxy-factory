@@ -20,10 +20,8 @@ contract ProxyFactory is IProxyFactory {
         return keccak256(abi.encodePacked(fromVersion, toVersion));
     }
 
-    function registerImplementation(uint256 version, address implementationAddress, address initializer) external override {
-        require(implementationAddress != address(0),   "PF:RI:ZERO_ADDRESS");
-        require(implementation[version] == address(0), "PF:RI:ALREADY_REGISTERED");
-        require(initializer != address(0),             "PF:RI:ZERO_INITIALIZER");
+    function _registerImplementation(uint256 version, address implementationAddress, address initializer) internal {
+        require(initializer != address(0), "PF:RI:ZERO_INITIALIZER");
 
         emit ImplementationRegister(
             versionOf[implementationAddress] = version,
@@ -32,11 +30,7 @@ contract ProxyFactory is IProxyFactory {
         );
     }
 
-    function setRecommendedVersion(uint256 version) external override {
-        emit RecommendedVersionSet(recommendedVersion = version);
-    }
-
-    function newInstance(uint256 version, bytes calldata initializationArguments) external override returns (address proxy) {
+    function _newInstance(uint256 version, bytes calldata initializationArguments) internal returns (address proxy) {
         address initializer = initializerFor[version];
         require(initializer != address(0), "PF:NI:NO_INITIALIZER");
 
@@ -48,23 +42,13 @@ contract ProxyFactory is IProxyFactory {
         emit InstanceDeployed(version, proxy, initializationArguments);
     }
 
-    function getImplementation() external override view returns (address) {
-        return implementationFor[msg.sender];
-    }
-
-    function setMigrationPath(uint256 fromVersion, uint256 toVersion, address migrator) external override {
-        require(implementation[fromVersion] != address(0), "PF:SUP:OLD_NOT_REGISTERED");
-        require(implementation[toVersion] != address(0),   "PF:SUP:NEW_NOT_REGISTERED");
-        require(migrator != address(0),                    "PF:SUP:ZERO_MIGRATOR");
+    function _setMigrationPath(uint256 fromVersion, uint256 toVersion, address migrator) internal {
+        require(migrator != address(0), "PF:SUP:ZERO_MIGRATOR");
 
         emit MigrationPathSet(fromVersion, toVersion, migratorForPath[_getUpgradePath(fromVersion, toVersion)] = migrator);
     }
 
-    function getMigrator(uint256 fromVersion, uint256 toVersion) external view override returns (address proxy) {
-        return migratorForPath[_getUpgradePath(fromVersion, toVersion)];
-    }
-
-    function upgradeImplementationFor(address proxy, uint256 toVersion, bytes calldata migrationArguments) external override {
+    function _upgradeImplementationFor(address proxy, uint256 toVersion, bytes calldata migrationArguments) internal {
         uint256 fromVersion = versionOf[implementationFor[proxy]];
         
         address migrator = migratorForPath[_getUpgradePath(fromVersion, toVersion)];
@@ -76,6 +60,41 @@ contract ProxyFactory is IProxyFactory {
         require(success, "PF:UIF:MIGRATION_FAILED");
 
         emit InstanceUpgrade(proxy, fromVersion, toVersion, migrationArguments);
+    }
+
+    function registerImplementation(uint256 version, address implementationAddress, address initializer) external virtual override {
+        require(implementationAddress != address(0),   "PF:RI:ZERO_ADDRESS");
+        require(implementation[version] == address(0), "PF:RI:ALREADY_REGISTERED");
+
+        _registerImplementation(version, implementationAddress, initializer);
+    }
+
+    function setRecommendedVersion(uint256 version) external override {
+        emit RecommendedVersionSet(recommendedVersion = version);
+    }
+
+    function newInstance(uint256 version, bytes calldata initializationArguments) external virtual override returns (address proxy) {
+        return _newInstance(version, initializationArguments);
+    }
+
+    function newInstance(bytes calldata initializationArguments) external virtual override returns (address proxy) {
+        return _newInstance(recommendedVersion, initializationArguments);
+    }
+
+    function getImplementation() external override view returns (address) {
+        return implementationFor[msg.sender];
+    }
+
+    function setMigrationPath(uint256 fromVersion, uint256 toVersion, address migrator) external virtual override {
+        _setMigrationPath(fromVersion, toVersion, migrator);
+    }
+
+    function getMigrator(uint256 fromVersion, uint256 toVersion) external view override returns (address proxy) {
+        return migratorForPath[_getUpgradePath(fromVersion, toVersion)];
+    }
+
+    function upgradeImplementationFor(address proxy, uint256 toVersion, bytes calldata migrationArguments) external virtual override {
+        return _upgradeImplementationFor(proxy, toVersion, migrationArguments);
     }
 
 }

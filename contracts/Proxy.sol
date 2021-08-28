@@ -46,11 +46,11 @@ contract Proxy {
         }
     }
 
-    fallback() payable external {
+    fallback() payable external virtual {
         _fallback();
     }
 
-    receive() payable external {
+    receive() payable external virtual {
         _fallback();
     }
 
