@@ -20,7 +20,7 @@ skip_build=$([ "$build" == "0" ] && echo "1" || echo "0")
 
 export DAPP_TEST_TIMESTAMP=1622483493
 export DAPP_TEST_NUMBER=12543537
-export DAPP_SOLC_VERSION=0.8.6
+export DAPP_SOLC_VERSION=0.8.7
 export DAPP_SRC="contracts"
 export DAPP_LINK_TEST_LIBRARIES=0
 export DAPP_STANDARD_JSON=$config

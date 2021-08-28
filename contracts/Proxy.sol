@@ -1,28 +1,33 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.6;
+pragma solidity ^0.8.7;
 
-import { IProxy } from "./interfaces/IProxy.sol";
 import { IProxyFactory } from "./interfaces/IProxyFactory.sol";
 
-contract Proxy is IProxy {
+contract Proxy {
 
-    // IMPORTANT: `address public factory` must be first defined state variable
-    address internal factory;
+    /**
+     * @dev Storage slot with the address of the current factory. This is the keccak-256 hash of "FACTORY_SLOT".
+     */
+    bytes32 private constant FACTORY_SLOT = 0xf2db84db8157f5a01a257d644038e8929d5a62c9ffa8b736374913908897e5bb;
 
-    constructor() payable {
-        factory = msg.sender;
+    constructor(address factory) payable {
+        bytes32 slot = FACTORY_SLOT;
+
+        assembly {
+            sstore(slot, factory)
+        }
     }
 
-    function _implementation() internal view returns (address) {
-        return IProxyFactory(factory).getImplementation();
-    }
-    
-    function implementation() external override view returns (address) {
-        return _implementation();
-    }
+    function _fallback() private {
+        bytes32 slot = FACTORY_SLOT;
 
-    function _fallback() internal {
-        address implementationAddress = _implementation();
+        address factory;
+
+        assembly {
+            factory := sload(slot)
+        }
+
+        address implementationAddress = IProxyFactory(factory).getImplementation();
 
         assembly {
             calldatacopy(0, 0, calldatasize())
