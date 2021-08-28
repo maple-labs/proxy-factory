@@ -16,8 +16,8 @@ contract ProxyFactory is IProxyFactory {
 
     uint256 public override recommendedVersion;
 
-    function _getUpgradePath(uint256 oldVersion, uint256 newVersion) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(oldVersion, newVersion));
+    function _getUpgradePath(uint256 fromVersion, uint256 toVersion) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(fromVersion, toVersion));
     }
 
     function registerImplementation(uint256 version, address implementationAddress, address initializer) external override {
@@ -25,13 +25,15 @@ contract ProxyFactory is IProxyFactory {
         require(implementation[version] == address(0), "PF:RI:ALREADY_REGISTERED");
         require(initializer != address(0),             "PF:RI:ZERO_INITIALIZER");
 
-        implementation[version]          = implementationAddress;
-        initializerFor[version]          = initializer;
-        versionOf[implementationAddress] = version;
+        emit ImplementationRegister(
+            versionOf[implementationAddress] = version,
+            implementation[version]          = implementationAddress,
+            initializerFor[version]          = initializer
+        );
     }
 
     function setRecommendedVersion(uint256 version) external override {
-        recommendedVersion = version;
+        emit RecommendedVersionSet(recommendedVersion = version);
     }
 
     function newInstance(uint256 version, bytes calldata initializationArguments) external override returns (address proxy) {
@@ -42,31 +44,38 @@ contract ProxyFactory is IProxyFactory {
 
         (bool success,) = proxy.call(abi.encodeWithSelector(IProxied.initialize.selector, initializer, initializationArguments));
         require(success, "PF:NI:INITIALIZE_FAILED");
+
+        emit InstanceDeployed(version, proxy, initializationArguments);
     }
 
     function getImplementation() external override view returns (address) {
         return implementationFor[msg.sender];
     }
 
-    function setMigrationPath(uint256 oldVersion, uint256 newVersion, address migrator) external override {
-        require(implementation[oldVersion] != address(0), "PF:SUP:OLD_NOT_REGISTERED");
-        require(implementation[newVersion] != address(0), "PF:SUP:NEW_NOT_REGISTERED");
-        require(migrator != address(0),                   "PF:SUP:ZERO_MIGRATOR");
+    function setMigrationPath(uint256 fromVersion, uint256 toVersion, address migrator) external override {
+        require(implementation[fromVersion] != address(0), "PF:SUP:OLD_NOT_REGISTERED");
+        require(implementation[toVersion] != address(0),   "PF:SUP:NEW_NOT_REGISTERED");
+        require(migrator != address(0),                    "PF:SUP:ZERO_MIGRATOR");
 
-        migratorForPath[_getUpgradePath(oldVersion, newVersion)] = migrator;
+        emit MigrationPathSet(fromVersion, toVersion, migratorForPath[_getUpgradePath(fromVersion, toVersion)] = migrator);
     }
 
-    function upgradeImplementationFor(address proxy, uint256 oldVersion, uint256 newVersion, bytes calldata migrationArguments) external override {
-        require(implementation[oldVersion] == implementationFor[proxy], "PF:UIF:INCORRECT_VERSION");
+    function getMigrator(uint256 fromVersion, uint256 toVersion) external view override returns (address proxy) {
+        return migratorForPath[_getUpgradePath(fromVersion, toVersion)];
+    }
+
+    function upgradeImplementationFor(address proxy, uint256 toVersion, bytes calldata migrationArguments) external override {
+        uint256 fromVersion = versionOf[implementationFor[proxy]];
         
-        address migrator = migratorForPath[_getUpgradePath(oldVersion, newVersion)];
+        address migrator = migratorForPath[_getUpgradePath(fromVersion, toVersion)];
         require(migrator != address(0), "PF:UIF:NO_MIGRATOR");
 
-        implementationFor[proxy] = implementation[newVersion];
+        implementationFor[proxy] = implementation[toVersion];
 
         (bool success,) = proxy.call(abi.encodeWithSelector(IProxied.migrate.selector, migrator, migrationArguments));
         require(success, "PF:UIF:MIGRATION_FAILED");
 
+        emit InstanceUpgrade(proxy, fromVersion, toVersion, migrationArguments);
     }
 
 }
