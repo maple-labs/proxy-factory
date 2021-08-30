@@ -24,11 +24,8 @@ interface IProxyFactory {
     /// @notice Returns the address of the implementation of a proxy instance.
     function implementationFor(address) external view returns (address);
 
-    /// @notice Returns the address of the initialization contract of a version of an implementation.
-    function initializerFor(uint256) external view returns (address);
-
-    /// @notice Returns the address of the migration contract for a migration path.
-    function migratorForPath(bytes32) external view returns (address);
+    /// @notice Returns the address of the migration contract for a migration path (from version, to version).
+    function migratorForPath(uint256, uint256) external view returns (address);
 
     /// @notice Returns the version of an implementation address.
     function versionOf(address) external view returns (uint256);
@@ -53,9 +50,6 @@ interface IProxyFactory {
 
     /// @notice Sets the migrator used to allow upgrading and migrations from a version to another version.
     function setMigrationPath(uint256 fromVersion, uint256 toVersion, address migrator) external;
-
-    /// @notice Returns the migrator used in upgrading and migrating from a version to another version.
-    function getMigrator(uint256 fromVersion, uint256 toVersion) external view returns (address proxy);
 
     /// @notice Upgrades and migrates a proxy instance to a version, with some migration arguments.
     function upgradeImplementationFor(address proxy, uint256 toVersion, bytes calldata migrationArguments) external;

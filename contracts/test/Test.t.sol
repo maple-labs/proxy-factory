@@ -179,7 +179,7 @@ contract Test is DSTest {
         // Register and recommend V2
         factory.registerImplementation(2, address(implementationV2), address(initializerV2));
         factory.setMigrationPath(1, 2, address(migrator));
-        assertEq(factory.getMigrator(1, 2), address(migrator));
+        assertEq(factory.migratorForPath(1, 2), address(migrator));
         factory.setRecommendedVersion(2);
 
         // Migrate proxy from V1 to V2

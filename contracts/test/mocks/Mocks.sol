@@ -10,6 +10,8 @@ import { SlotManipulatable } from "../../SlotManipulatable.sol";
 // Used to initialize V1 contracts ("constructor")
 contract MockInitializerV1 is SlotManipulatable {
 
+    event Initialized(uint256 beta, uint256 charlie, uint256 delta15);
+
     bytes32 private constant DELTA_SLOT = 0x1111111111111111111111111111111111111111111111111111111111111111;
 
     function _setDeltaOf(uint256 key, uint256 newDelta) internal {
@@ -25,6 +27,8 @@ contract MockInitializerV1 is SlotManipulatable {
 
         // set deltaOf[15] to 4747
         _setDeltaOf(15, 4747);
+
+        emit Initialized(1313, 1717, 4747);
     }
 
 }
@@ -214,6 +218,8 @@ contract MockV1 is IMockV1, Proxied {
 // Used to initialize V2 contracts ("constructor")
 contract MockInitializerV2 is SlotManipulatable {
 
+    event Initialized(uint256 charlie, uint256 echo, uint256 derby15);
+
     bytes32 private constant DERBY_SLOT = 0x1111111111111111111111111111111111111111111111111111111111111111;
 
     function _setDerbyOf(uint256 key, uint256 newDelta) internal {
@@ -231,12 +237,16 @@ contract MockInitializerV2 is SlotManipulatable {
 
         // set derbyOf[15] based on arg
         _setDerbyOf(15, arg);
+
+        emit Initialized(3434, 3333, arg);
     }
 
 }
 
 // Used to migrate V1 contracts to v2 (may contain initialization lock as well)
 contract MockMigratorV1ToV2 is SlotManipulatable {
+
+    event Migrated(uint256 newCharlie, uint256 echo, uint256 derby15, uint256 newDerby4);
 
     bytes32 private constant DERBY_SLOT = 0x1111111111111111111111111111111111111111111111111111111111111111;
 
@@ -261,7 +271,8 @@ contract MockMigratorV1ToV2 is SlotManipulatable {
         _setSlotValue(bytes32(uint256(1)), bytes32(0));
 
         // double value of charlie from V1
-        _setSlotValue(bytes32(0), bytes32(uint256(_getSlotValue(bytes32(0))) * 2));
+        uint256 newCharlie = uint256(_getSlotValue(bytes32(0))) * 2;
+        _setSlotValue(bytes32(0), bytes32(newCharlie));
 
         // set echo (in slot 1) to 3333
         _setSlotValue(bytes32(uint256(1)), bytes32(uint256(3333)));
@@ -270,9 +281,12 @@ contract MockMigratorV1ToV2 is SlotManipulatable {
         _setDerbyOf(15, arg);
 
         // if derbyOf[2] is set, set derbyOf[4] to 18
+        uint256 newDerby4 = _getDerbyOf(4);
         if (_getDerbyOf(2) != 0) {
-            _setDerbyOf(4, 1188);
+            _setDerbyOf(4, newDerby4 = 1188);
         }
+
+        emit Migrated(newCharlie, 3333, arg, newDerby4);
     }
 
 }
