@@ -243,54 +243,6 @@ contract MockInitializerV2 is SlotManipulatable {
 
 }
 
-// Used to migrate V1 contracts to v2 (may contain initialization lock as well)
-contract MockMigratorV1ToV2 is SlotManipulatable {
-
-    event Migrated(uint256 newCharlie, uint256 echo, uint256 derby15, uint256 newDerby4);
-
-    bytes32 private constant DERBY_SLOT = 0x1111111111111111111111111111111111111111111111111111111111111111;
-
-    function _setDerbyOf(uint256 key, uint256 newDelta) internal {
-        _setSlotValue(_getReferenceTypeSlot(DERBY_SLOT, bytes32(key)), bytes32(newDelta));
-    }
-
-    function _getDerbyOf(uint256 key) public view returns (uint256) {
-        return uint256(_getSlotValue(_getReferenceTypeSlot(DERBY_SLOT, bytes32(key))));
-    }
-
-    fallback() external {
-        uint256 arg = abi.decode(msg.data, (uint256));
-
-        // NOTE: It is possible to do this specific migration more optimally, but this is just a clear example
-
-        // delete beta from V1
-        _setSlotValue(0, 0);
-
-        // move charlie from V1 up a slot (slot 1 to slot 2)
-        _setSlotValue(bytes32(0), _getSlotValue(bytes32(uint256(1))));
-        _setSlotValue(bytes32(uint256(1)), bytes32(0));
-
-        // double value of charlie from V1
-        uint256 newCharlie = uint256(_getSlotValue(bytes32(0))) * 2;
-        _setSlotValue(bytes32(0), bytes32(newCharlie));
-
-        // set echo (in slot 1) to 3333
-        _setSlotValue(bytes32(uint256(1)), bytes32(uint256(3333)));
-
-        // set derbyOf[15] based on arg
-        _setDerbyOf(15, arg);
-
-        // if derbyOf[2] is set, set derbyOf[4] to 18
-        uint256 newDerby4 = _getDerbyOf(4);
-        if (_getDerbyOf(2) != 0) {
-            _setDerbyOf(4, newDerby4 = 1188);
-        }
-
-        emit Migrated(newCharlie, 3333, arg, newDerby4);
-    }
-
-}
-
 interface IMockV2 is IProxied {
 
     function axiom() external view returns (uint256);
@@ -469,6 +421,54 @@ contract MockV2 is IMockV2, Proxied {
 
     function setAnotherDerbyOfAndReturnOldDerbyOf(address other, uint256 key, uint256 newDerby) external override returns (uint256 oldDerby) {
         return IMockV2(other).setDerbyOfAndReturnOldDerbyOf(key, newDerby);
+    }
+
+}
+
+// Used to migrate V1 contracts to v2 (may contain initialization logic as well)
+contract MockMigratorV1ToV2 is SlotManipulatable {
+
+    event Migrated(uint256 newCharlie, uint256 echo, uint256 derby15, uint256 newDerby4);
+
+    bytes32 private constant DERBY_SLOT = 0x1111111111111111111111111111111111111111111111111111111111111111;
+
+    function _setDerbyOf(uint256 key, uint256 newDelta) internal {
+        _setSlotValue(_getReferenceTypeSlot(DERBY_SLOT, bytes32(key)), bytes32(newDelta));
+    }
+
+    function _getDerbyOf(uint256 key) public view returns (uint256) {
+        return uint256(_getSlotValue(_getReferenceTypeSlot(DERBY_SLOT, bytes32(key))));
+    }
+
+    fallback() external {
+        uint256 arg = abi.decode(msg.data, (uint256));
+
+        // NOTE: It is possible to do this specific migration more optimally, but this is just a clear example
+
+        // delete beta from V1
+        _setSlotValue(0, 0);
+
+        // move charlie from V1 up a slot (slot 1 to slot 2)
+        _setSlotValue(bytes32(0), _getSlotValue(bytes32(uint256(1))));
+        _setSlotValue(bytes32(uint256(1)), bytes32(0));
+
+        // double value of charlie from V1
+        uint256 newCharlie = uint256(_getSlotValue(bytes32(0))) * 2;
+        _setSlotValue(bytes32(0), bytes32(newCharlie));
+
+        // set echo (in slot 1) to 3333
+        _setSlotValue(bytes32(uint256(1)), bytes32(uint256(3333)));
+
+        // set derbyOf[15] based on arg
+        _setDerbyOf(15, arg);
+
+        // if derbyOf[2] is set, set derbyOf[4] to 18
+        uint256 newDerby4 = _getDerbyOf(4);
+        if (_getDerbyOf(2) != 0) {
+            _setDerbyOf(4, newDerby4 = 1188);
+        }
+
+        emit Migrated(newCharlie, 3333, arg, newDerby4);
     }
 
 }
