@@ -512,3 +512,16 @@ contract MockMigratorV1ToV2 is SlotManipulatable {
     }
 
 }
+
+
+contract MockMigratorV2ToV3 is SlotManipulatable {
+
+    fallback() external {
+        _setSlotValue(bytes32(0), _getSlotValue(bytes32(uint256(3))));
+    }
+
+}
+
+contract MockV3 is Proxied {
+    
+}

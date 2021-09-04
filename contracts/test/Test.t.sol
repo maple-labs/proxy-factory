@@ -11,7 +11,15 @@ import {
     MockImplementationV2,
     MockInitializerV1,
     MockInitializerV2,
+<<<<<<< HEAD
     MockMigratorV1ToV2
+=======
+    MockMigratorV1ToV2,
+    IMockV2,
+    MockV2,
+    MockMigratorV2ToV3,
+    MockV3
+>>>>>>> feat: increase test coverage
 } from "./mocks/Mocks.sol";
 
 contract Test is DSTest {
@@ -313,6 +321,7 @@ contract Test is DSTest {
 
         assertEq(proxy, 0x6FD86f82E0D16465c7c9898971A545B83d43a9e0);
     }
+     
 
     function testFail_newInstanceWithSalt() public {
         MockFactory          factory        = new MockFactory();
@@ -323,4 +332,85 @@ contract Test is DSTest {
         factory.newInstanceWithSalt(1, new bytes(0), "salt");
     }
 
+    function test_multistep_upgradeability() external {
+        ProxyFactory factory            = new ProxyFactory();
+        MockInitializerV1 initializerV1 = new MockInitializerV1();
+        MockV1 implementationV1         = new MockV1();
+        MockInitializerV2 initializerV2 = new MockInitializerV2();
+        MockV2 implementationV2         = new MockV2();
+        MockMigratorV1ToV2 migratorV2   = new MockMigratorV1ToV2();
+        MockMigratorV2ToV3 migratorV3   = new MockMigratorV2ToV3();
+        MockV3 implementationV3         = new MockV3();
+
+        // Register and recommend V1
+        factory.registerImplementation(1, address(implementationV1), address(initializerV1));
+        factory.setRecommendedVersion(1);
+
+        address proxy = factory.newInstance(factory.recommendedVersion(), new bytes(0));
+
+
+        // Register and recommend V2
+        factory.registerImplementation(2, address(implementationV2), address(initializerV2));
+        factory.setMigrationPath(1, 2, address(migratorV2));
+        assertEq(factory.migratorForPath(1, 2), address(migratorV2));
+        factory.setRecommendedVersion(2);
+
+        // Register and recommend V3
+        factory.registerImplementation(3, address(implementationV3), address(initializerV2));
+        factory.setMigrationPath(2, 3, address(migratorV3));
+        assertEq(factory.migratorForPath(2, 3), address(migratorV3));
+        factory.setRecommendedVersion(3);
+
+        // try migrating from v1 straight to v3
+        // Migrate proxy from V1 to V2
+        string memory sig = "upgradeImplementationFor(address,uint,bytes)";
+        (bool ok,) = address(factory).call(abi.encodeWithSignature(sig, proxy, 3, bytes("")));
+        assert(!ok);
+
+
+        //Migrate proxy from V1 to V2
+        factory.upgradeImplementationFor(proxy, 2, abi.encode(uint256(9090)));
+
+        // Check if migration was successful
+        assertEq(factory.implementationFor(proxy), address(implementationV2));
+        assertEq(IMockV2(proxy).implementation(),  address(implementationV2));
+
+        // Now migrate V2 to V3
+        factory.upgradeImplementationFor(proxy, 3, bytes(""));
+        assertEq(factory.implementationFor(proxy), address(implementationV3));
+        assertEq(IMockV2(proxy).implementation(),  address(implementationV3));
+    }
+
+    function testFail_nonRegistered_implementation() public {
+        ProxyFactory factory            = new ProxyFactory();
+        MockInitializerV1 initializerV1 = new MockInitializerV1();
+        MockV1 implementationV1         = new MockV1();
+
+        // Register and recommend V1
+        factory.registerImplementation(1, address(implementationV1), address(initializerV1));
+        factory.setRecommendedVersion(1);
+
+        address proxy = factory.newInstance(factory.recommendedVersion(), new bytes(0));
+
+        factory.upgradeImplementationFor(proxy, 2, abi.encode(uint256(9090)));
+    }
+
+    function testFail_no_path_upgrade() public {
+        ProxyFactory factory            = new ProxyFactory();
+        MockInitializerV1 initializerV1 = new MockInitializerV1();
+        MockV1 implementationV1         = new MockV1();
+        MockInitializerV2 initializerV2 = new MockInitializerV2();
+        MockV2 implementationV2         = new MockV2();
+
+        // Register and recommend V1
+        factory.registerImplementation(1, address(implementationV1), address(initializerV1));
+        factory.setRecommendedVersion(1);
+
+        address proxy = factory.newInstance(factory.recommendedVersion(), new bytes(0));
+
+        factory.registerImplementation(2, address(implementationV2), address(initializerV2));
+
+        //Migrate proxy from V1 to V2
+        factory.upgradeImplementationFor(proxy, 2, abi.encode(uint256(9090)));
+    }
 }
