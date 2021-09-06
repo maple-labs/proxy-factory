@@ -70,9 +70,11 @@ contract ProxyFactory is IProxyFactory {
 
 
         bytes memory bytecode = type(Proxy).creationCode;
+
         assembly {
             proxy := create2(0, add(bytecode, 32), mload(bytecode), salt)
         }
+        
         implementationFor[proxy] = implementation[version];
 
         (bool success,) = proxy.call(abi.encodeWithSelector(IProxied.migrate.selector, initializer, initializationArguments));
