@@ -45,6 +45,9 @@ interface IProxyFactory {
     /// @notice Deploys a new instance of a proxy, for the recommended version of the implementation, with some initialization arguments.
     function newInstance(bytes calldata initializationArguments) external returns (address proxy);
 
+    /// @notice Deploys a new instance of a proxy to an address, using create2
+    function newInstanceTo(uint256 version, bytes calldata initializationArguments, bytes32 salt) external returns (address proxy);
+
     /// @notice Returns the implementation contract address of the caller, assumed to be a proxy instance.
     function getImplementation() external view returns (address);
 

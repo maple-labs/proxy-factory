@@ -200,4 +200,20 @@ contract Test is DSTest {
         assertEq(IMockV2(proxy).getViewable(), 3333);
     }
 
+    function test_newInstanceTo() public {
+        ProxyFactory factory            = new ProxyFactory();
+        MockInitializerV1 initializerV1 = new MockInitializerV1();
+        MockV1 implementationV1         = new MockV1();
+
+        // Register and recommend V1
+        factory.registerImplementation(1, address(implementationV1), address(initializerV1));
+        factory.setRecommendedVersion(1);
+
+        bytes32 salt = "salt";
+
+        address proxy = factory.newInstanceTo(factory.recommendedVersion(), new bytes(0), salt);
+
+        assertEq(proxy, 0x37fAD1bd698C3dD78E4F744Dd5D68e1F100bDa76);
+    }
+
 }

@@ -48,11 +48,32 @@ contract ProxyFactory is IProxyFactory {
         return _newInstance(recommendedVersion, initializationArguments);
     }
 
+    function newInstanceTo(uint256 version, bytes calldata initializationArguments, bytes32 salt) external virtual override returns (address proxy) {
+        return _newInstanceTo(recommendedVersion, initializationArguments, salt);
+    }
+
     function _newInstance(uint256 version, bytes calldata initializationArguments) internal returns (address proxy) {
         address initializer = migratorForPath[0][version];
         require(initializer != address(0), "PF:NI:NO_INITIALIZER");
 
-        implementationFor[proxy = address(new Proxy(address(this)))] = implementation[version];
+        implementationFor[proxy = address(new Proxy())] = implementation[version];
+
+        (bool success,) = proxy.call(abi.encodeWithSelector(IProxied.migrate.selector, initializer, initializationArguments));
+        require(success, "PF:NI:INITIALIZE_FAILED");
+
+        emit InstanceDeployed(version, proxy, initializationArguments);
+    }
+
+    function _newInstanceTo(uint256 version, bytes calldata initializationArguments, bytes32 salt) internal returns (address proxy) {
+        address initializer = migratorForPath[0][version];
+        require(initializer != address(0), "PF:NI:NO_INITIALIZER");
+
+
+        bytes memory bytecode = type(Proxy).creationCode;
+        assembly {
+            proxy := create2(0, add(bytecode, 32), mload(bytecode), salt)
+        }
+        implementationFor[proxy] = implementation[version];
 
         (bool success,) = proxy.call(abi.encodeWithSelector(IProxied.migrate.selector, initializer, initializationArguments));
         require(success, "PF:NI:INITIALIZE_FAILED");
