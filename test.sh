@@ -20,6 +20,7 @@ export DAPP_SOLC_VERSION=0.8.7
 export DAPP_SRC="contracts"
 export DAPP_LINK_TEST_LIBRARIES=0
 export DAPP_STANDARD_JSON=$config
+export DAPP_TEST_ADDRESS="0xd00d00d00d00d00d00d00d00d00d00d00d00d00d"
 
 if [ "$skip_build" = "1" ]; then export DAPP_SKIP_BUILD=1; fi
 
