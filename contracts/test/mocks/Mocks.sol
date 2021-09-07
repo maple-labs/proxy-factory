@@ -1,11 +1,49 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import { IProxied }       from "../../interfaces/IProxied.sol";
-import { IProxyFactory }  from "../../interfaces/IProxyFactory.sol";
+import { IProxied } from "../../interfaces/IProxied.sol";
 
 import { Proxied }           from "../../Proxied.sol";
+import { ProxyFactory }      from "../../ProxyFactory.sol";
 import { SlotManipulatable } from "../../SlotManipulatable.sol";
+
+contract MockFactory is ProxyFactory {
+
+    function implementation(uint256 version) external view returns (address) {
+        return _implementation[version];
+    }
+
+    function implementationFor(address proxy) external view returns (address) {
+        return _implementationFor[proxy];
+    }
+
+    function migratorForPath(uint256 fromVersion, uint256 toVersion) external view returns (address) {
+        return _migratorForPath[fromVersion][toVersion];
+    }
+
+    function versionOf(address proxy) external view returns (uint256) {
+        return _versionOf[proxy];
+    }
+
+    function registerImplementation(uint256 version, address implementationAddress) external {
+        require(_registerImplementation(version, implementationAddress));
+    }
+
+    function newInstance(uint256 version, bytes calldata initializationArguments) external returns (address proxy) {
+        bool success;
+        (success, proxy) = _newInstance(version, initializationArguments);
+        require(success);
+    }
+
+    function registerMigrationPath(uint256 fromVersion, uint256 toVersion, address migrator) external {
+        require(_registerMigrationPath(fromVersion, toVersion, migrator));
+    }
+
+    function upgradeInstance(address proxy, uint256 toVersion, bytes calldata migrationArguments) external {
+        require(_upgradeInstance(proxy, toVersion, migrationArguments));
+    }
+
+}
 
 // Used to initialize V1 contracts ("constructor")
 contract MockInitializerV1 is SlotManipulatable {

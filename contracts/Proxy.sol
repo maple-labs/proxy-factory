@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import { IProxyFactory } from "./interfaces/IProxyFactory.sol";
+import { IReturnsCallerImplementation } from "./interfaces/IReturnsCallerImplementation.sol";
 
 contract Proxy {
 
-    /**
-     * @dev Storage slot with the address of the current factory. This is the keccak-256 hash of "FACTORY_SLOT".
-     */
+    /// @dev Storage slot with the address of the current factory. This is the keccak-256 hash of "FACTORY_SLOT".
     bytes32 private constant FACTORY_SLOT = 0xf2db84db8157f5a01a257d644038e8929d5a62c9ffa8b736374913908897e5bb;
 
     constructor(address factory) payable {
@@ -27,7 +25,7 @@ contract Proxy {
             factory := sload(slot)
         }
 
-        address implementationAddress = IProxyFactory(factory).getImplementation();
+        address implementationAddress = IReturnsCallerImplementation(factory).getImplementation();
 
         assembly {
             calldatacopy(0, 0, calldatasize())

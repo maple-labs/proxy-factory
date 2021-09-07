@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import { IProxied }      from "./interfaces/IProxied.sol";
-import { IProxyFactory } from "./interfaces/IProxyFactory.sol";
+import { IProxied }                     from "./interfaces/IProxied.sol";
+import { IReturnsCallerImplementation } from "./interfaces/IReturnsCallerImplementation.sol";
 
 import { SlotManipulatable } from "./SlotManipulatable.sol";
 
@@ -15,17 +15,16 @@ contract Proxied is IProxied, SlotManipulatable {
     }
 
     function implementation() external view override returns (address) {
-        return IProxyFactory(factory()).getImplementation();
+        return IReturnsCallerImplementation(factory()).getImplementation();
     }
 
     function migrate(address migrator, bytes calldata arguments) external virtual override {
         require(msg.sender == factory(), "P:M:NOT_FACTORY");
-        _migrate(migrator, arguments);
+        require(_migrate(migrator, arguments), "P:M:MIGRATION_FAILED");
     }
 
-    function _migrate(address migrator, bytes calldata arguments) internal {
-        (bool success,) = migrator.delegatecall(arguments);
-        require(success, "P:M:MIGRATION_FAILED");
+    function _migrate(address migrator, bytes calldata arguments) internal returns (bool success) {
+        (success,) = migrator.delegatecall(arguments);
     }
 
 }

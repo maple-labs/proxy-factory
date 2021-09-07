@@ -9,7 +9,7 @@ interface IProxied {
     /// @notice Returns the address of the implementation contract.
     function implementation() external view returns (address);
 
-    /// @notice Modifies the proxy's storage by delegatecalling a migrator contract with some arguments.
+    /// @notice Modifies the proxy's storage by delegate-calling a migrator contract with some arguments.
     function migrate(address migrator, bytes calldata arguments) external;
 
 }

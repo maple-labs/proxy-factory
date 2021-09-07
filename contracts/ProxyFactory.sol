@@ -2,79 +2,60 @@
 pragma solidity ^0.8.7;
 
 import { IProxied }      from "./interfaces/IProxied.sol";
-import { IProxyFactory } from "./interfaces/IProxyFactory.sol";
+import { IReturnsCallerImplementation } from "./interfaces/IReturnsCallerImplementation.sol";
 
 import { Proxy } from "./Proxy.sol";
 
-contract ProxyFactory is IProxyFactory {
+contract ProxyFactory is IReturnsCallerImplementation {
   
-    mapping(uint256 => address) public override implementation;
+    mapping(uint256 => address) internal _implementation;
 
-    mapping(address => address) public override implementationFor;
+    mapping(address => address) internal _implementationFor;
 
-    mapping(address => uint256) public override versionOf;
+    mapping(address => uint256) internal _versionOf;
 
-    mapping(uint256 => mapping(uint256 => address)) public override migratorForPath;
+    mapping(uint256 => mapping(uint256 => address)) internal _migratorForPath;
 
-    function registerImplementation(uint256 version, address implementationAddress) external virtual override {
-        _registerImplementation(version, implementationAddress);
+    function getImplementation() external view override virtual returns (address) {
+        return _implementationFor[msg.sender];
     }
 
-    function _registerImplementation(uint256 version, address implementationAddress) internal {
-        require(implementation[version] == address(0), "PF:RI:ALREADY_REGISTERED");
-        require(implementationAddress != address(0),   "PF:RI:NO_IMPLEMENTATION");
+    function _registerImplementation(uint256 version, address implementationAddress) internal virtual returns (bool success) {
+        // Cannot already be registered and cannot be empty implementation
+        if (_implementation[version] != address(0) || implementationAddress == address(0)) return false;
 
-        emit ImplementationRegister(
-            versionOf[implementationAddress] = version,
-            implementation[version]          = implementationAddress
-        );
+        _versionOf[implementationAddress] = version;
+        _implementation[version]          = implementationAddress;
+
+        return true;
     }
 
-    function newInstance(uint256 version, bytes calldata initializationArguments) external virtual override returns (address proxy) {
-        return _newInstance(version, initializationArguments);
+    function _newInstance(uint256 version, bytes calldata initializationArguments) internal virtual returns (bool success, address proxy) {
+        _implementationFor[proxy = address(new Proxy(address(this)))] = _implementation[version];
+
+        address initializer = _migratorForPath[version][version];
+
+        if (initializer == address(0)) return (true, proxy);
+
+        (success,) = proxy.call(abi.encodeWithSelector(IProxied.migrate.selector, initializer, initializationArguments));
+        
+        return (success, proxy);
     }
 
-    function _newInstance(uint256 version, bytes calldata initializationArguments) internal returns (address proxy) {
-        implementationFor[proxy = address(new Proxy(address(this)))] = implementation[version];
-
-        emit InstanceDeployed(version, proxy, initializationArguments);
-
-        address initializer = migratorForPath[version][version];
-
-        if (initializer == address(0)) return proxy;
-
-        (bool success,) = proxy.call(abi.encodeWithSelector(IProxied.migrate.selector, initializer, initializationArguments));
-        require(success, "PF:NI:INITIALIZE_FAILED");
+    function _registerMigrationPath(uint256 fromVersion, uint256 toVersion, address migrator) internal virtual returns (bool success) {
+        _migratorForPath[fromVersion][toVersion] = migrator;
+        return true;
     }
 
-    function getImplementation() external override view returns (address) {
-        return implementationFor[msg.sender];
-    }
+    function _upgradeInstance(address proxy, uint256 toVersion, bytes calldata migrationArguments) internal virtual returns (bool success) {
+        uint256 fromVersion      = _versionOf[_implementationFor[proxy]];
+        _implementationFor[proxy] = _implementation[toVersion];
 
-    function registerMigrationPath(uint256 fromVersion, uint256 toVersion, address migrator) external virtual override {
-        _registerMigrationPath(fromVersion, toVersion, migrator);
-    }
+        address migrator = _migratorForPath[fromVersion][toVersion];
 
-    function _registerMigrationPath(uint256 fromVersion, uint256 toVersion, address migrator) internal {
-        emit MigrationPathSet(fromVersion, toVersion, migratorForPath[fromVersion][toVersion] = migrator);
-    }
+        if (migrator == address(0)) return true;
 
-    function upgradeInstance(address proxy, uint256 toVersion, bytes calldata migrationArguments) external virtual override {
-        return _upgradeInstance(proxy, toVersion, migrationArguments);
-    }
-
-    function _upgradeInstance(address proxy, uint256 toVersion, bytes calldata migrationArguments) internal {
-        uint256 fromVersion      = versionOf[implementationFor[proxy]];
-        implementationFor[proxy] = implementation[toVersion];
-
-        emit InstanceUpgrade(proxy, fromVersion, toVersion, migrationArguments);
-
-        address migrator = migratorForPath[fromVersion][toVersion];
-
-        if (migrator == address(0)) return;
-
-        (bool success,) = proxy.call(abi.encodeWithSelector(IProxied.migrate.selector, migrator, migrationArguments));
-        require(success, "PF:UIF:MIGRATION_FAILED");
+        (success,) = proxy.call(abi.encodeWithSelector(IProxied.migrate.selector, migrator, migrationArguments));
     }
 
 }

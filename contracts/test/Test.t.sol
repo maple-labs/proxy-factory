@@ -3,11 +3,8 @@ pragma solidity ^0.8.7;
 
 import { DSTest } from "../../modules/ds-test/src/test.sol";
 
-import { ProxyFactory }  from "../ProxyFactory.sol";
-
-import { ProxyFactoryUser } from "./accounts/ProxyFactoryUser.sol";
-
 import {
+    MockFactory,
     MockInitializerV1,
     IMockV1,
     MockV1,
@@ -21,10 +18,9 @@ contract Test is DSTest {
 
     function test_newInstance_withNoInitialization() external {
         MockV1            implementation = new MockV1();
-        ProxyFactory      factory        = new ProxyFactory();
-        ProxyFactoryUser  user           = new ProxyFactoryUser();
+        MockFactory       factory        = new MockFactory();
 
-        user.proxyFactory_registerImplementation(address(factory), 1, address(implementation));
+        factory.registerImplementation(1, address(implementation));
 
         assertEq(factory.implementation(1),                  address(implementation));
         assertEq(factory.migratorForPath(1, 1),              address(0));
@@ -65,11 +61,10 @@ contract Test is DSTest {
     function test_newInstance_withNoInitializationArgs() external {
         MockInitializerV1 initializer    = new MockInitializerV1();
         MockV1            implementation = new MockV1();
-        ProxyFactory      factory        = new ProxyFactory();
-        ProxyFactoryUser  user           = new ProxyFactoryUser();
+        MockFactory       factory        = new MockFactory();
 
-        user.proxyFactory_registerMigrationPath(address(factory), 1, 1, address(initializer));
-        user.proxyFactory_registerImplementation(address(factory), 1, address(implementation));
+        factory.registerMigrationPath(1, 1, address(initializer));
+        factory.registerImplementation(1, address(implementation));
 
         assertEq(factory.implementation(1),                  address(implementation));
         assertEq(factory.migratorForPath(1, 1),              address(initializer));
@@ -110,11 +105,10 @@ contract Test is DSTest {
     function test_newInstance_withInitializationArgs() external {
         MockInitializerV2 initializer    = new MockInitializerV2();
         MockV2            implementation = new MockV2();
-        ProxyFactory      factory        = new ProxyFactory();
-        ProxyFactoryUser  user           = new ProxyFactoryUser();
+        MockFactory       factory        = new MockFactory();
 
-        user.proxyFactory_registerMigrationPath(address(factory), 2, 2, address(initializer));
-        user.proxyFactory_registerImplementation(address(factory), 2, address(implementation));
+        factory.registerMigrationPath(2, 2, address(initializer));
+        factory.registerImplementation(2, address(implementation));
 
         assertEq(factory.implementation(2),                  address(implementation));
         assertEq(factory.migratorForPath(2, 2),              address(initializer));
@@ -155,11 +149,10 @@ contract Test is DSTest {
     function test_composability() external {
         MockInitializerV1 initializer    = new MockInitializerV1();
         MockV1            implementation = new MockV1();
-        ProxyFactory      factory        = new ProxyFactory();
-        ProxyFactoryUser  user           = new ProxyFactoryUser();
+        MockFactory       factory        = new MockFactory();
 
-        user.proxyFactory_registerMigrationPath(address(factory), 1, 1, address(initializer));
-        user.proxyFactory_registerImplementation(address(factory), 1, address(implementation));
+        factory.registerMigrationPath(1, 1, address(initializer));
+        factory.registerImplementation(1, address(implementation));
 
         IMockV1 proxy1 = IMockV1(factory.newInstance(1, new bytes(0)));
         address proxy2 = factory.newInstance(1, new bytes(0));
@@ -212,12 +205,11 @@ contract Test is DSTest {
         MockInitializerV2  initializerV2    = new MockInitializerV2();
         MockV1             implementationV1 = new MockV1();
         MockV2             implementationV2 = new MockV2();
-        ProxyFactory       factory          = new ProxyFactory();
-        ProxyFactoryUser   user             = new ProxyFactoryUser();
+        MockFactory        factory          = new MockFactory();
 
         // Register V1, its initializer, and deploy a proxy
-        user.proxyFactory_registerMigrationPath(address(factory), 1, 1, address(initializerV1));
-        user.proxyFactory_registerImplementation(address(factory), 1, address(implementationV1));
+        factory.registerMigrationPath(1, 1, address(initializerV1));
+        factory.registerImplementation(1, address(implementationV1));
         address proxy = factory.newInstance(1, new bytes(0));
 
         // Set some values in proxy
@@ -228,13 +220,13 @@ contract Test is DSTest {
         MockV1(proxy).setDeltaOf(15, 2323);
 
         // Register V2, its initializer, and a migrator
-        user.proxyFactory_registerMigrationPath(address(factory), 2, 2, address(initializerV2));
-        user.proxyFactory_registerImplementation(address(factory), 2, address(implementationV2));
+        factory.registerMigrationPath(2, 2, address(initializerV2));
+        factory.registerImplementation(2, address(implementationV2));
 
         assertEq(factory.migratorForPath(1, 2), address(0));
 
         // Migrate proxy from V1 to V2
-        user.proxyFactory_upgradeInstance(address(factory), proxy, 2, abi.encode(uint256(9090)));
+        factory.upgradeInstance(proxy, 2, abi.encode(uint256(9090)));
 
         // Check if migration was successful
         assertEq(factory.implementationFor(proxy), address(implementationV2));
@@ -257,12 +249,11 @@ contract Test is DSTest {
         MockMigratorV1ToV2 migrator         = new MockMigratorV1ToV2();
         MockV1             implementationV1 = new MockV1();
         MockV2             implementationV2 = new MockV2();
-        ProxyFactory       factory          = new ProxyFactory();
-        ProxyFactoryUser   user             = new ProxyFactoryUser();
+        MockFactory        factory          = new MockFactory();
 
         // Register V1, its initializer, and deploy a proxy
-        user.proxyFactory_registerMigrationPath(address(factory), 1, 1, address(initializerV1));
-        user.proxyFactory_registerImplementation(address(factory), 1, address(implementationV1));
+        factory.registerMigrationPath(1, 1, address(initializerV1));
+        factory.registerImplementation(1, address(implementationV1));
         address proxy = factory.newInstance(1, new bytes(0));
 
         // Set some values in proxy
@@ -273,14 +264,14 @@ contract Test is DSTest {
         MockV1(proxy).setDeltaOf(15, 2323);
 
         // Register V2, its initializer, and a migrator
-        user.proxyFactory_registerMigrationPath(address(factory), 2, 2, address(initializerV2));
-        user.proxyFactory_registerMigrationPath(address(factory), 1, 2, address(migrator));
-        user.proxyFactory_registerImplementation(address(factory), 2, address(implementationV2));
+        factory.registerMigrationPath(2, 2, address(initializerV2));
+        factory.registerMigrationPath(1, 2, address(migrator));
+        factory.registerImplementation(2, address(implementationV2));
 
         assertEq(factory.migratorForPath(1, 2), address(migrator));
 
         // Migrate proxy from V1 to V2
-        user.proxyFactory_upgradeInstance(address(factory), proxy, 2, abi.encode(uint256(9090)));
+        factory.upgradeInstance(proxy, 2, abi.encode(uint256(9090)));
 
         // Check if migration was successful
         assertEq(factory.implementationFor(proxy), address(implementationV2));
