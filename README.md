@@ -1,1 +1,1 @@
-## proxy-factory
+## Proxy Factory
