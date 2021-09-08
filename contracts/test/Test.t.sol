@@ -311,7 +311,7 @@ contract Test is DSTest {
 
         address proxy = factory.newInstanceWithSalt(1, new bytes(0), "salt");
 
-        assertEq(proxy, 0xd58e13bC0B6fB33Da335FDc77E158Bcce0143b69);
+        assertEq(proxy, 0x6FD86f82E0D16465c7c9898971A545B83d43a9e0);
     }
 
     function testFail_newInstanceWithSalt() public {
