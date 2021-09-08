@@ -386,5 +386,4 @@ contract Test is DSTest {
         // Migrate proxy from V1 to V2.
         factory.upgradeInstance(proxy, 2, new bytes(0));
     }
-
 }
