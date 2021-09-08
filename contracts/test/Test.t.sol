@@ -12,9 +12,7 @@ import {
     MockInitializerV1,
     MockInitializerV2,
     MockMigratorV1ToV2,
-    MockMigratorV1ToV2WithNoArgs,
-    MockMigratorV2ToV3,
-    MockV3
+    MockMigratorV1ToV2WithNoArgs
 } from "./mocks/Mocks.sol";
 
 contract Test is DSTest {
