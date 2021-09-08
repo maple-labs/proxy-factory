@@ -513,6 +513,51 @@ contract MockMigratorV1ToV2 is SlotManipulatable {
 
 }
 
+contract MockMigratorV1ToV2WithNoArgs is SlotManipulatable {
+
+    event Migrated(uint256 newCharlie, uint256 echo, uint256 newDerby4);
+
+    bytes32 private constant DERBY_SLOT = 0x1111111111111111111111111111111111111111111111111111111111111111;
+
+    function _setDerbyOf(uint256 key, uint256 newDelta) internal {
+        _setSlotValue(_getReferenceTypeSlot(DERBY_SLOT, bytes32(key)), bytes32(newDelta));
+    }
+
+    function _getDerbyOf(uint256 key) public view returns (uint256) {
+        return uint256(_getSlotValue(_getReferenceTypeSlot(DERBY_SLOT, bytes32(key))));
+    }
+
+    fallback() external {
+        // NOTE: It is possible to do this specific migration more optimally, but this is just a clear example
+
+        // Delete beta from V1
+        _setSlotValue(0, 0);
+
+        // Move charlie from V1 up a slot (slot 1 to slot 2)
+        _setSlotValue(bytes32(0), _getSlotValue(bytes32(uint256(1))));
+        _setSlotValue(bytes32(uint256(1)), bytes32(0));
+
+        // Double value of charlie from V1
+        uint256 newCharlie = uint256(_getSlotValue(bytes32(0))) * 2;
+        _setSlotValue(bytes32(0), bytes32(newCharlie));
+
+        // Set echo (in slot 1) to 3333
+        _setSlotValue(bytes32(uint256(1)), bytes32(uint256(3333)));
+
+        // Set derbyOf[15] based on arg
+        _setDerbyOf(15, 15);
+
+        // If derbyOf[2] is set, set derbyOf[4] to 18
+        uint256 newDerby4 = _getDerbyOf(4);
+        if (_getDerbyOf(2) != 0) {
+            _setDerbyOf(4, newDerby4 = 1188);
+        }
+
+        emit Migrated(newCharlie, 3333, newDerby4);
+    }
+
+}
+
 
 contract MockMigratorV2ToV3 is SlotManipulatable {
 
