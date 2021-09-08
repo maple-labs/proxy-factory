@@ -1,6 +1,6 @@
 # Proxy Factory
 
-[![CircleCI](https://circleci.com/gh/maple-labs/proxy-factory/tree/main.svg?style=svg)](https://circleci.com/gh/maple-labs/proxy-factory/tree/main)
+[![CircleCI](https://circleci.com/gh/maple-labs/proxy-factory/tree/main.svg?style=svg)](https://circleci.com/gh/maple-labs/proxy-factory/tree/main) [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
 
 Set of base contracts to deploy and manage versions on chain, designed to be minimally opinionated, extensible and gas-efficient.
@@ -27,28 +27,22 @@ Responsible for deploying new instances and triggering initialization and migrat
     contract ProxyFactory {
 
         /// @dev Register a new implementation address attached to a version, which can be used with any scheme of versioning.
-        function _registerImplementation(uint256 version, address implementationAddress) internal virtual returns (bool success) {
-        }
+        function _registerImplementation(uint256 version, address implementationAddress) internal virtual returns (bool success)
 
         /// @dev Deploys a new instance of and calls the initialization function with provided arguments
-        function _newInstance(uint256 version, bytes calldata arguments) internal virtual returns (bool success, address proxy) {
-        }
+        function _newInstance(uint256 version, bytes calldata arguments) internal virtual returns (bool success, address proxy)
 
         /// @dev Deploys a new instance at a specific address using the salt and calls the initialization function with provided arguments
-        function _newInstanceWithSalt(uint256 version, bytes calldata arguments, bytes32 salt) internal virtual returns (bool success, address proxy) {
-        }
+        function _newInstanceWithSalt(uint256 version, bytes calldata arguments, bytes32 salt) internal virtual returns (bool success, address proxy) 
 
         /// @dev Calls the proxy with arguments to perform the necessary initialization
-        function _initializeInstance(address proxy, uint256 version, bytes calldata arguments) internal virtual returns (bool success) {
-        }
+        function _initializeInstance(address proxy, uint256 version, bytes calldata arguments) internal virtual returns (bool success) 
 
         /// @dev Register a possible migration path and optionally sets a migrator contract
-        function _registerMigrationPath(uint256 fromVersion, uint256 toVersion, address migrator) internal virtual returns (bool success) {
-        }
+        function _registerMigrationPath(uint256 fromVersion, uint256 toVersion, address migrator) internal virtual returns (bool success) 
 
         /// @dev Updates the implementation used by a proxy.
-        function _upgradeInstance(address proxy, uint256 toVersion, bytes calldata arguments) internal virtual returns (bool success) {
-        }
+        function _upgradeInstance(address proxy, uint256 toVersion, bytes calldata arguments) internal virtual returns (bool success) 
     }
 ```
 
@@ -66,12 +60,10 @@ contract Proxy is SlotManipulatable {
     bytes32 private constant IMPLEMENTATION_SLOT = 0xf603533e14e17222e047634a2b3457fe346d27e294cedf9d21d74e5feea4a046;
 
     /// @dev Function to be called right after deployment, similar to a constructor in regular contracts.
-    function _setup() private {
-    }
+    function _setup() private 
 
     /// @dev Function to delegatecall all incoming function to `implementation`
-    fallback() payable external virtual {
-    }
+    fallback() payable external virtual 
 
 }
 ```
@@ -84,25 +76,35 @@ Helper contract that allow to manually modify storage that might be needed durin
  contract SlotManipulatable {
 
     /// @dev returns the value stored at slot
-    function _getSlotValue(bytes32 slot) internal view returns (bytes32 value) {
-    }
+    function _getSlotValue(bytes32 slot) internal view returns (bytes32 value) 
 
     /// @dev set the storage slot to the given value
-    function _setSlotValue(bytes32 slot, bytes32 value) internal {
-    }
+    function _setSlotValue(bytes32 slot, bytes32 value) internal 
 
     // @dev Get the storage slot for a reference type
-    function _getReferenceTypeSlot(bytes32 slot, bytes32 key) internal pure returns (bytes32 value) {
-    }
+    function _getReferenceTypeSlot(bytes32 slot, bytes32 key) internal pure returns (bytes32 value) 
 
 }
 ```
 
+## Testing and Development
+#### Setup
+```sh
+git clone git@github.com:maple-labs/maple-core.git
+cd maple-core
+dapp update
+```
+#### Running Tests
+- To run all tests: `make test` (runs `./test.sh`)
+- To run a specific test function: `./test.sh <test_name>` (e.g. `./test.sh test_composability`)
 
-### Security
+This project was built using <a href="https://github.com/dapphub/dapptools">dapptools</a>
 
-The code is designed to be extended with needed feature, including access control and other guards on deployment and upgradeability, so it's not advised to use this as is. Additionally it is still in development and haven't been externally audited yet. 
 
+
+## Security
+
+The code is designed to be extended with needed feature, including access control and other guards on deployment and upgradeability, therefore it's not advised to use this as is. Additionally, it is still in development and haven't been externally audited. 
 
 
 ## About Maple
