@@ -15,7 +15,7 @@ It was built to provide the necessary features to be reused across multiple proj
 
 - Create2: can perform both regular deployments, as well create2 deployments, where the contracts are deployed to a deterministic address, regardless of chain state.
 
-- Migration Contracts: an intermediary contract that can perform housekeeping between one version and the next.
+- Migration Contracts: an intermediary contract that can perform housekeeping between one version and the next, as well a construction/instantiation.
 
 ### Contracts
 
