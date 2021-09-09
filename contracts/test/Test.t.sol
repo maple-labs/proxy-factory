@@ -346,7 +346,7 @@ contract Test is DSTest {
         assertEq(IMockInitializerV2(proxy).getViewable(), 3333);
     }
 
-    function test_newInstanceWithSalt() public {
+    function test_newInstanceWithSalt() external {
         MockFactory          factory        = new MockFactory();
         MockImplementationV1 implementation = new MockImplementationV1();
 
@@ -357,8 +357,7 @@ contract Test is DSTest {
         assertEq(proxy, 0x6FD86f82E0D16465c7c9898971A545B83d43a9e0);
     }
      
-
-    function testFail_newInstanceWithSalt() public {
+    function testFail_newInstanceWithSalt() external {
         MockFactory          factory        = new MockFactory();
         MockImplementationV1 implementation = new MockImplementationV1();
 
@@ -367,13 +366,13 @@ contract Test is DSTest {
         factory.newInstanceWithSalt(1, new bytes(0), "salt");
     }
 
-    function testFail_newInstance_nonRegistered_implementation() public {
+    function testFail_newInstance_nonRegisteredImplementation() external {
         MockFactory factory = new MockFactory();
 
         address proxy = factory.newInstance(1, new bytes(0));
     }
 
-    function testFail_upgrade_nonRegistered_implementation() public {
+    function testFail_upgrade_nonRegisteredImplementation() external {
         MockFactory          factory          = new MockFactory();
         MockInitializerV1    initializerV1    = new MockInitializerV1();
         MockImplementationV1 implementationV1 = new MockImplementationV1();

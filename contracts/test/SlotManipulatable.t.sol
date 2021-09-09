@@ -31,21 +31,21 @@ contract StorageContract is SlotManipulatable {
 
     /*****************/
     /*** Setters ****/
-    /*****+*********/
+    /****************/
 
     function setSlotValue(bytes32 slot, bytes32 value) external {
         _setSlotValue(slot, value);
     }
 
-    function setUintOf(uint256 key, uint256 value) external {
+    function setUint256Of(uint256 key, uint256 value) external {
         _setSlotValue(_getReferenceTypeSlot(UINT_SLOT, bytes32(key)), bytes32(value));
     }
 
-    function setUintOf(uint256 key, address value) external {
+    function setUint256Of(uint256 key, address value) external {
         _setSlotValue(_getReferenceTypeSlot(UINT_SLOT, bytes32(key)), _bytes32(value));
     }
 
-    function setUintOf(uint256 key, bytes32 value) external {
+    function setUint256Of(uint256 key, bytes32 value) external {
         _setSlotValue(_getReferenceTypeSlot(UINT_SLOT, bytes32(key)), value);
     }
 
@@ -81,15 +81,15 @@ contract StorageContract is SlotManipulatable {
         value = _getSlotValue(slot);
     }
 
-    function getUintIn(uint256 key) external view returns (uint256 value) {
+    function getUint256In(uint256 key) external view returns (uint256 value) {
         value = uint256(_getSlotValue(_getReferenceTypeSlot(UINT_SLOT, bytes32(key))));
     }
 
-    function getUintIn(address key) external view returns (uint256 value) {
+    function getUint256In(address key) external view returns (uint256 value) {
         value = uint256(_getSlotValue(_getReferenceTypeSlot(ADDRESS_SLOT, _bytes32(key))));
     }
 
-    function getUintIn(bytes32 key) external view returns (uint256 value) {
+    function getUint256In(bytes32 key) external view returns (uint256 value) {
         value = uint256(_getSlotValue(_getReferenceTypeSlot(BYTES_SLOT, key)));
     }
 
@@ -122,78 +122,77 @@ contract SlotManipulatableTest is DSTest {
 
     StorageContract storageContract;
 
-    function setUp() public {
+    function setUp() external {
         storageContract = new StorageContract();
     }
 
-    function test_set_and_retrieve_bytes32(bytes32 value) public {
+    function test_setAndRetrieve_bytes32(bytes32 value) external {
         storageContract.setSlotValue(bytes32(0), value);
 
         assertEq(storageContract.getSlotValue(bytes32(0)), value);
     }
 
-    function test_set_and_retrieve_uint(uint256 value) public {
+    function test_setAndRetrieve_uint(uint256 value) external {
         storageContract.setSlotValue(bytes32(0), bytes32(value));
 
         assertEq(uint256(storageContract.getSlotValue(bytes32(0))), value);
     }
 
-    function test_set_and_retrieve_address(address value) public {
+    function test_setAndRetrieve_address(address value) external {
         storageContract.setSlotValue(bytes32(0), bytes32(uint256(uint160(value))));
 
         assertEq(address(uint160(uint256(storageContract.getSlotValue(bytes32(0))))), value);
     }
 
-    function test_referenceType_uint_to_uint(uint256 key, uint256 value) public {
-        storageContract.setUintOf(key, value);
+    function test_referenceType_uint256ToUint256(uint256 key, uint256 value) external {
+        storageContract.setUint256Of(key, value);
 
-        assertEq(storageContract.getUintIn(key), value);
+        assertEq(storageContract.getUint256In(key), value);
     }
 
-    function test_referenceType_uint_to_address(uint256 key, address value) public {
-        storageContract.setUintOf(key, value);
+    function test_referenceType_uint256ToAddress(uint256 key, address value) external {
+        storageContract.setUint256Of(key, value);
 
         assertEq(storageContract.getAddressIn(key), value);
     }
 
-    function test_referenceType_uint_to_bytes32(uint256 key, bytes32 value) public {
-        storageContract.setUintOf(key, value);
+    function test_referenceType_uint256ToBytes32(uint256 key, bytes32 value) external {
+        storageContract.setUint256Of(key, value);
 
         assertEq(storageContract.getBytes32In(key), value);
     }
 
-    function test_referenceType_address_to_uint(address key, uint256 value) public {
+    function test_referenceType_addressToUint256(address key, uint256 value) external {
         storageContract.setAddressOf(key, value);
 
-        assertEq(storageContract.getUintIn(key), value);
+        assertEq(storageContract.getUint256In(key), value);
     }
 
-    function test_referenceType_address_to_address(address key, address value) public {
+    function test_referenceType_addressToAddress(address key, address value) external {
         storageContract.setAddressOf(key, value);
 
         assertEq(storageContract.getAddressIn(key), value);
     }
 
-    function test_referenceType_address_to_bytes32(address key, bytes32 value) public {
-
+    function test_referenceType_addressToBytes32(address key, bytes32 value) external {
         storageContract.setAddressOf(key, value);
 
         assertEq(storageContract.getBytes32In(key), value);
     }
 
-    function test_referenceType_bytes32_to_uintss(bytes32 key, uint256 value) public {
+    function test_referenceType_bytes32ToUints256(bytes32 key, uint256 value) external {
         storageContract.setBytes32Of(key, value);
 
-        assertEq(storageContract.getUintIn(key), value);
+        assertEq(storageContract.getUint256In(key), value);
     }
 
-    function test_referenceType_bytes32_to_address(bytes32 key, address value) public {
+    function test_referenceType_bytes32ToAddress(bytes32 key, address value) external {
         storageContract.setBytes32Of(key, value);
 
         assertEq(storageContract.getAddressIn(key), value);
     }
 
-    function test_referenceType_bytes32_to_bytes32(bytes32 key, bytes32 value) public {
+    function test_referenceType_bytes32ToBytes32(bytes32 key, bytes32 value) external {
         storageContract.setBytes32Of(key, value);
 
         assertEq(storageContract.getBytes32In(key), value);
