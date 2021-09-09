@@ -4,8 +4,8 @@ pragma solidity ^0.8.7;
 import { DSTest } from "../../modules/ds-test/src/test.sol";
 
 import {
-    IMockInitializerV1,
-    IMockInitializerV2,
+    IMockImplementationV1,
+    IMockImplementationV2,
     MockFactory,
     MockImplementationV1,
     MockImplementationV2,
@@ -27,17 +27,29 @@ contract Test is DSTest {
         assertEq(factory.migratorForPath(1, 1),              address(0));
         assertEq(factory.versionOf(address(implementation)), 1);
 
-        IMockInitializerV1 proxy = IMockInitializerV1(factory.newInstance(1, new bytes(0)));
+        IMockImplementationV1 proxy = IMockImplementationV1(factory.newInstance(1, new bytes(0)));
 
         assertEq(proxy.factory(),        address(factory));
         assertEq(proxy.implementation(), address(implementation));
 
-        // No change made in storage
-        assertEq(proxy.storageVariable(), 0);
+        assertEq(proxy.alpha(),     1111);
+        assertEq(proxy.beta(),      0);
+        assertEq(proxy.charlie(),   0);
+        assertEq(proxy.deltaOf(2),  0);
 
-        // Performing mutating functions on proxy
-        proxy.setStorageVariable(8888);
-        assertEq(proxy.storageVariable(), 8888);
+        assertEq(proxy.getLiteral(),  2222);
+        assertEq(proxy.getConstant(), 1111);
+        assertEq(proxy.getViewable(), 0);
+
+        proxy.setBeta(8888);
+        assertEq(proxy.beta(), 8888);
+
+
+        proxy.setCharlie(3838);
+        assertEq(proxy.charlie(), 3838);
+
+        proxy.setDeltaOf(2, 2929);
+        assertEq(proxy.deltaOf(2), 2929);
     }
 
     function test_newInstance_withNoInitializationArgs() external {
@@ -52,16 +64,30 @@ contract Test is DSTest {
         assertEq(factory.migratorForPath(1, 1),              address(initializer));
         assertEq(factory.versionOf(address(implementation)), 1);
 
-        IMockInitializerV1 proxy = IMockInitializerV1(factory.newInstance(1, new bytes(0)));
+        IMockImplementationV1 proxy = IMockImplementationV1(factory.newInstance(1, new bytes(0)));
 
         assertEq(proxy.factory(),        address(factory));
         assertEq(proxy.implementation(), address(implementation));
 
-        // storageVariable is set to default value defined in MockInitializerV1
-        assertEq(proxy.storageVariable(), 1313);
+        assertEq(proxy.alpha(),     1111);
+        assertEq(proxy.beta(),      1313);
+        assertEq(proxy.charlie(),   1717);
+        assertEq(proxy.deltaOf(2),  0);
 
-        proxy.setStorageVariable(8888);
-        assertEq(proxy.storageVariable(), 8888);
+        assertEq(proxy.getLiteral(),  2222);
+        assertEq(proxy.getConstant(), 1111);
+        assertEq(proxy.getViewable(), 1313);
+
+        proxy.setBeta(8888);
+        assertEq(proxy.beta(), 8888);
+
+
+        proxy.setCharlie(3838);
+        assertEq(proxy.charlie(), 3838);
+
+
+        proxy.setDeltaOf(2, 2929);
+        assertEq(proxy.deltaOf(2), 2929);
     }
 
     function test_newInstance_withInitializationArgs() external {
@@ -76,14 +102,59 @@ contract Test is DSTest {
         assertEq(factory.migratorForPath(2, 2),              address(initializer));
         assertEq(factory.versionOf(address(implementation)), 2);
 
-        // Create a new instance passing an argument
-        IMockInitializerV2 proxy = IMockInitializerV2(factory.newInstance(2, abi.encode(uint256(9090))));
+        IMockImplementationV2 proxy = IMockImplementationV2(factory.newInstance(2, abi.encode(uint256(9090))));
 
         assertEq(proxy.factory(),        address(factory));
         assertEq(proxy.implementation(), address(implementation));
 
-        // Storage has the value passed to initializer
-        assertEq(proxy.storageVariable(), 9090);
+        assertEq(proxy.axiom(),     5555);
+        assertEq(proxy.charlie(),   3434);
+        assertEq(proxy.echo(),      3333);
+        assertEq(proxy.derbyOf(2),  0);
+
+        assertEq(proxy.getLiteral(),  4444);
+        assertEq(proxy.getConstant(), 5555);
+        assertEq(proxy.getViewable(), 3333);
+
+        proxy.setCharlie(6969);
+        assertEq(proxy.charlie(), 6969);
+
+        proxy.setEcho(4040);
+        assertEq(proxy.echo(), 4040);
+
+        proxy.setDerbyOf(2, 6161);
+        assertEq(proxy.derbyOf(2), 6161);
+    }
+
+    function test_composability() external {
+        MockFactory          factory        = new MockFactory();
+        MockInitializerV1    initializer    = new MockInitializerV1();
+        MockImplementationV1 implementation = new MockImplementationV1();
+
+        factory.registerMigrationPath(1, 1, address(initializer));
+        factory.registerImplementation(1, address(implementation));
+
+        IMockImplementationV1 proxy1 = IMockImplementationV1(factory.newInstance(1, new bytes(0)));
+        address proxy2              = factory.newInstance(1, new bytes(0));
+
+        // Change proxy2 values.
+        IMockImplementationV1(proxy2).setBeta(5959);
+
+        assertEq(proxy1.getAnotherBeta(proxy2), 5959);
+
+        proxy1.setAnotherBeta(proxy2, 8888);
+        assertEq(proxy1.getAnotherBeta(proxy2), 8888);
+
+        // Ensure proxy1 values have remained as default.
+        assertEq(proxy1.alpha(),     1111);
+        assertEq(proxy1.beta(),      1313);
+        assertEq(proxy1.charlie(),   1717);
+        assertEq(proxy1.deltaOf(2),  0);
+        assertEq(proxy1.deltaOf(15), 4747);
+
+        assertEq(proxy1.getLiteral(),  2222);
+        assertEq(proxy1.getConstant(), 1111);
+        assertEq(proxy1.getViewable(), 1313);
     }
 
     function test_upgradeability_withNoMigration() external {
@@ -98,8 +169,12 @@ contract Test is DSTest {
         factory.registerImplementation(1, address(implementationV1));
         address proxy = factory.newInstance(1, new bytes(0));
 
-        // storageVariable is set to default value defined in MockInitializerV1
-        assertEq(MockImplementationV1(proxy).storageVariable(), 1313);
+        // Set some values in proxy.
+        IMockImplementationV1(proxy).setBeta(7575);
+        IMockImplementationV1(proxy).setCharlie(1414);
+        IMockImplementationV1(proxy).setDeltaOf(2,  3030);
+        IMockImplementationV1(proxy).setDeltaOf(4,  9944);
+        IMockImplementationV1(proxy).setDeltaOf(15, 2323);
 
         // Register V2, its initializer, and a migrator.
         factory.registerMigrationPath(2, 2, address(initializerV2));
@@ -107,28 +182,91 @@ contract Test is DSTest {
 
         assertEq(factory.migratorForPath(1, 2), address(0));
 
+        // Check state before migration.
+        assertEq(IMockImplementationV1(proxy).implementation(),  address(implementationV1));
+
+        assertEq(IMockImplementationV1(proxy).beta(),      7575);  // Is old beta.
+        assertEq(IMockImplementationV1(proxy).charlie(),   1414);  // Is old charlie.
+        assertEq(IMockImplementationV1(proxy).deltaOf(2),  3030);  // Should remain unchanged.
+        assertEq(IMockImplementationV1(proxy).deltaOf(4),  9944);  // Should remain unchanged.
+        assertEq(IMockImplementationV1(proxy).deltaOf(15), 2323);  // Should remain unchanged.
+
+        assertEq(IMockImplementationV1(proxy).getLiteral(),  2222);
+        assertEq(IMockImplementationV1(proxy).getConstant(), 1111);
+        assertEq(IMockImplementationV1(proxy).getViewable(), 7575);
+
         // Migrate proxy from V1 to V2.
         factory.upgradeInstance(proxy, 2, new bytes(0));
 
         // Check if migration was successful.
-        assertEq(IMockInitializerV2(proxy).implementation(),  address(implementationV2));
+        assertEq(IMockImplementationV2(proxy).implementation(),  address(implementationV2));
 
-        // SetStorageVariable is no longer available in V2
-        try MockImplementationV1(proxy).setStorageVariable(7777) {
+        assertEq(IMockImplementationV2(proxy).charlie(),   7575);  // Is old beta.
+        assertEq(IMockImplementationV2(proxy).echo(),      1414);  // Is old charlie.
+        assertEq(IMockImplementationV2(proxy).derbyOf(2),  3030);  // Should remain unchanged.
+        assertEq(IMockImplementationV2(proxy).derbyOf(4),  9944);  // Should remain unchanged.
+        assertEq(IMockImplementationV2(proxy).derbyOf(15), 2323);  // Should remain unchanged.
 
-            // Trying to call `setStorageVariable` will cause a revert
-            assert(false);
-        } catch {
+        assertEq(IMockImplementationV2(proxy).getLiteral(),  4444);
+        assertEq(IMockImplementationV2(proxy).getConstant(), 5555);
+        assertEq(IMockImplementationV2(proxy).getViewable(), 1414);
+    }
 
-            //Storage remained the same
-            assertEq(MockImplementationV1(proxy).storageVariable(), 1313);
-            assert(true);   
-        }
+    function test_upgradeability_withMigrationArgs() external {
+        MockFactory          factory          = new MockFactory();
+        MockInitializerV1    initializerV1    = new MockInitializerV1();
+        MockInitializerV2    initializerV2    = new MockInitializerV2();
+        MockMigratorV1ToV2   migrator         = new MockMigratorV1ToV2();
+        MockImplementationV1 implementationV1 = new MockImplementationV1();
+        MockImplementationV2 implementationV2 = new MockImplementationV2();
 
-        // Use new functionality available in V2
-        MockImplementationV2(proxy).incrementStorageVariable();
+        // Register V1, its initializer, and deploy a proxy.
+        factory.registerMigrationPath(1, 1, address(initializerV1));
+        factory.registerImplementation(1, address(implementationV1));
+        address proxy = factory.newInstance(1, new bytes(0));
 
-        assertEq(MockImplementationV2(proxy).storageVariable(), 1314);
+        // Set some values in proxy.
+        IMockImplementationV1(proxy).setBeta(7575);
+        IMockImplementationV1(proxy).setCharlie(1414);
+        IMockImplementationV1(proxy).setDeltaOf(2,  3030);
+        IMockImplementationV1(proxy).setDeltaOf(4,  9944);
+        IMockImplementationV1(proxy).setDeltaOf(15, 2323);
+
+        // Register V2, its initializer, and a migrator.
+        factory.registerMigrationPath(2, 2, address(initializerV2));
+        factory.registerMigrationPath(1, 2, address(migrator));
+        factory.registerImplementation(2, address(implementationV2));
+
+        assertEq(factory.migratorForPath(1, 2), address(migrator));
+
+        // Check state before migration.
+        assertEq(IMockImplementationV1(proxy).implementation(),  address(implementationV1));
+
+        assertEq(IMockImplementationV1(proxy).beta(),      7575);  // Is old beta.
+        assertEq(IMockImplementationV1(proxy).charlie(),   1414);  // Is old charlie.
+        assertEq(IMockImplementationV1(proxy).deltaOf(2),  3030);  // Should remain unchanged.
+        assertEq(IMockImplementationV1(proxy).deltaOf(4),  9944);  // Should remain unchanged.
+        assertEq(IMockImplementationV1(proxy).deltaOf(15), 2323);  // Should remain unchanged.
+
+        assertEq(IMockImplementationV1(proxy).getLiteral(),  2222);
+        assertEq(IMockImplementationV1(proxy).getConstant(), 1111);
+        assertEq(IMockImplementationV1(proxy).getViewable(), 7575);
+
+        // Migrate proxy from V1 to V2.
+        factory.upgradeInstance(proxy, 2, abi.encode(uint256(9090)));
+
+        // Check if migration was successful.
+        assertEq(IMockImplementationV2(proxy).implementation(),  address(implementationV2));
+
+        assertEq(IMockImplementationV2(proxy).charlie(),   2828);  // Should be doubled from V1.
+        assertEq(IMockImplementationV2(proxy).echo(),      3333);
+        assertEq(IMockImplementationV2(proxy).derbyOf(2),  3030);  // Should remain unchanged.
+        assertEq(IMockImplementationV2(proxy).derbyOf(4),  1188);  // Should be different due to migration case.
+        assertEq(IMockImplementationV2(proxy).derbyOf(15), 9090);  // Should have been overwritten by migration arg.
+
+        assertEq(IMockImplementationV2(proxy).getLiteral(),  4444);
+        assertEq(IMockImplementationV2(proxy).getConstant(), 5555);
+        assertEq(IMockImplementationV2(proxy).getViewable(), 3333);
     }
 
     function test_upgradeability_withNoMigrationArgs() external {
@@ -144,44 +282,12 @@ contract Test is DSTest {
         factory.registerImplementation(1, address(implementationV1));
         address proxy = factory.newInstance(1, new bytes(0));
 
-        // storageVariable is set to default value defined in MockInitializerV1
-        assertEq(MockImplementationV1(proxy).storageVariable(), 1313);
-
-        // Set it to a different value
-        MockImplementationV1(proxy).setStorageVariable(2222);
-
-        // Register V2, its initializer, and a migrator.
-        factory.registerMigrationPath(2, 2, address(initializerV2));
-        factory.registerMigrationPath(1, 2, address(migrator));
-        factory.registerImplementation(2, address(implementationV2));
-
-        assertEq(factory.migratorForPath(1, 2), address(migrator));
-
-        // Migrate proxy from V1 to V2.
-        factory.upgradeInstance(proxy, 2, new bytes(0));
-
-        // Check if migration was successful.
-        assertEq(IMockInitializerV2(proxy).implementation(),  address(implementationV2));
-
-        // storageVariable has modified to the migrator's default value
-        assertEq(MockImplementationV2(proxy).storageVariable(), 1111);
-    }
-
-    function test_upgradeability_withMigrationArgs() external {
-        MockFactory          factory          = new MockFactory();
-        MockInitializerV1    initializerV1    = new MockInitializerV1();
-        MockInitializerV2    initializerV2    = new MockInitializerV2();
-        MockMigratorV1ToV2   migrator         = new MockMigratorV1ToV2();
-        MockImplementationV1 implementationV1 = new MockImplementationV1();
-        MockImplementationV2 implementationV2 = new MockImplementationV2();
-
-        // Register V1, its initializer, and deploy a proxy.
-        factory.registerMigrationPath(1, 1, address(initializerV1));
-        factory.registerImplementation(1, address(implementationV1));
-        address proxy = factory.newInstance(1, new bytes(0));
-        
-        // storageVariable is set to valuepassed to constructor
-        assertEq(MockImplementationV1(proxy).storageVariable(), 1313);
+        // Set some values in proxy.
+        IMockImplementationV1(proxy).setBeta(7575);
+        IMockImplementationV1(proxy).setCharlie(1414);
+        IMockImplementationV1(proxy).setDeltaOf(2,  3030);
+        IMockImplementationV1(proxy).setDeltaOf(4,  9944);
+        IMockImplementationV1(proxy).setDeltaOf(15, 2323);
 
         // Register V2, its initializer, and a migrator.
         factory.registerMigrationPath(2, 2, address(initializerV2));
@@ -189,67 +295,38 @@ contract Test is DSTest {
         factory.registerImplementation(2, address(implementationV2));
 
         assertEq(factory.migratorForPath(1, 2), address(migrator));
+
+        // Check state before migration.
+        assertEq(IMockImplementationV1(proxy).implementation(),  address(implementationV1));
+
+        assertEq(IMockImplementationV1(proxy).beta(),      7575);  // Is old beta.
+        assertEq(IMockImplementationV1(proxy).charlie(),   1414);  // Is old charlie.
+        assertEq(IMockImplementationV1(proxy).deltaOf(2),  3030);  // Should remain unchanged.
+        assertEq(IMockImplementationV1(proxy).deltaOf(4),  9944);  // Should remain unchanged.
+        assertEq(IMockImplementationV1(proxy).deltaOf(15), 2323);  // Should remain unchanged.
+
+        assertEq(IMockImplementationV1(proxy).getLiteral(),  2222);
+        assertEq(IMockImplementationV1(proxy).getConstant(), 1111);
+        assertEq(IMockImplementationV1(proxy).getViewable(), 7575);
 
         // Migrate proxy from V1 to V2.
         factory.upgradeInstance(proxy, 2, abi.encode(uint256(9090)));
 
         // Check if migration was successful.
-        assertEq(IMockInitializerV2(proxy).implementation(),  address(implementationV2));
+        assertEq(IMockImplementationV2(proxy).implementation(),  address(implementationV2));
 
+        assertEq(IMockImplementationV2(proxy).charlie(),   2828);  // Should be doubled from V1.
+        assertEq(IMockImplementationV2(proxy).echo(),      3333);
+        assertEq(IMockImplementationV2(proxy).derbyOf(2),  3030);  // Should remain unchanged.
+        assertEq(IMockImplementationV2(proxy).derbyOf(4),  1188);  // Should be different due to migration case.
+        assertEq(IMockImplementationV2(proxy).derbyOf(15), 15); 
 
-        // storageVariable was upgraded during migration
-        assertEq(MockImplementationV2(proxy).storageVariable(), 9090);
-
-        // using v2 functionality
-        MockImplementationV2(proxy).incrementStorageVariable();
-
-        assertEq(MockImplementationV2(proxy).storageVariable(), 9091);
+        assertEq(IMockImplementationV2(proxy).getLiteral(),  4444);
+        assertEq(IMockImplementationV2(proxy).getConstant(), 5555);
+        assertEq(IMockImplementationV2(proxy).getViewable(), 3333);
     }
 
-    function test_independenceBetweenInstances() external {
-        MockFactory          factory          = new MockFactory();
-        MockInitializerV1    initializerV1    = new MockInitializerV1();
-        MockInitializerV2    initializerV2    = new MockInitializerV2();
-        MockImplementationV1 implementationV1 = new MockImplementationV1();
-        MockImplementationV2 implementationV2 = new MockImplementationV2();
-
-        factory.registerMigrationPath(1, 1, address(initializerV1));
-        factory.registerImplementation(1, address(implementationV1));
-
-        MockImplementationV1 proxy1 = MockImplementationV1(factory.newInstance(1, new bytes(0)));
-        MockImplementationV1 proxy2 = MockImplementationV1(factory.newInstance(1, new bytes(0)));
-
-        // Both instances start in the same state
-        assertEq(proxy1.factory(),         address(factory));
-        assertEq(proxy1.implementation(),  address(implementationV1));
-        assertEq(proxy1.storageVariable(), 1313);
-
-        assertEq(proxy2.factory(),         address(factory));
-        assertEq(proxy2.implementation(),  address(implementationV1));
-        assertEq(proxy2.storageVariable(), 1313);
-
-        // Changing only one of the instances
-        proxy1.setStorageVariable(8888);
-
-        // Ensure only one was modified
-        assertEq(proxy1.storageVariable(), 8888);
-        assertEq(proxy2.storageVariable(), 1313);
-
-        // Register V2, its initializer, and a migrator.
-        factory.registerMigrationPath(2, 2, address(initializerV2));
-        factory.registerImplementation(2, address(implementationV2));
-
-        assertEq(factory.migratorForPath(1, 2), address(0));
-
-        // Migrate only one instance
-        factory.upgradeInstance(address(proxy2), 2, new bytes(0));
-
-        // Check if migration was successful.
-        assertEq(MockImplementationV2(address(proxy2)).implementation(),  address(implementationV2));
-        assertEq(proxy1.implementation(),                                 address(implementationV1));
-    }
-
-    function test_newInstanceWithSalt() external {
+    function test_newInstanceWithSalt() public {
         MockFactory          factory        = new MockFactory();
         MockImplementationV1 implementation = new MockImplementationV1();
 
@@ -260,7 +337,8 @@ contract Test is DSTest {
         assertEq(proxy, 0x6FD86f82E0D16465c7c9898971A545B83d43a9e0);
     }
      
-    function testFail_newInstanceWithSalt() external {
+
+    function testFail_newInstanceWithSalt() public {
         MockFactory          factory        = new MockFactory();
         MockImplementationV1 implementation = new MockImplementationV1();
 
@@ -269,13 +347,13 @@ contract Test is DSTest {
         factory.newInstanceWithSalt(1, new bytes(0), "salt");
     }
 
-    function testFail_newInstance_nonRegisteredImplementation() external {
+    function testFail_newInstance_nonRegistered_implementation() public {
         MockFactory factory = new MockFactory();
 
         address proxy = factory.newInstance(1, new bytes(0));
     }
 
-    function testFail_upgrade_nonRegisteredImplementation() external {
+    function testFail_upgrade_nonRegistered_implementation() public {
         MockFactory          factory          = new MockFactory();
         MockInitializerV1    initializerV1    = new MockInitializerV1();
         MockImplementationV1 implementationV1 = new MockImplementationV1();
@@ -288,5 +366,5 @@ contract Test is DSTest {
         // Migrate proxy from V1 to V2.
         factory.upgradeInstance(proxy, 2, new bytes(0));
     }
-    
+
 }

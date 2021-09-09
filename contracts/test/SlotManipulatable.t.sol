@@ -17,7 +17,7 @@ contract StorageContract is SlotManipulatable {
         _setSlotValue(_getReferenceTypeSlot(REFERENCE_SLOT, bytes32(key)), value);
     }
 
-    function getSlotValue(bytes32 slot) external view returns (bytes32 value){
+    function getSlotValue(bytes32 slot) external view returns (bytes32 value) {
         value = _getSlotValue(slot);
     }
 
@@ -34,15 +34,7 @@ contract StorageContract is SlotManipulatable {
 contract SlotManipulatableTest is DSTest {
 
     StorageContract storageContract;
-
-    function _bytes32(address value) internal pure returns (bytes32) {
-        return bytes32(uint256(uint160(value)));
-    }
-
-    function _address(bytes32 value) internal pure returns (address) {
-        return address(uint160(uint256(value)));
-    }
-
+    
     function setUp() external {
         storageContract = new StorageContract();
     }
