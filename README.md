@@ -2,10 +2,9 @@
 
 [![CircleCI](https://circleci.com/gh/maple-labs/proxy-factory/tree/main.svg?style=svg)](https://circleci.com/gh/maple-labs/proxy-factory/tree/main) [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
+**DISCLAIMER: This code has NOT been externally audited and is actively being developed. Please do not use in production.**
 
 Set of base contracts to deploy and manage versions on chain, designed to be minimally opinionated, extensible and gas-efficient. These contracts were built to provide the necessary features to be reused across multiple projects, both within Maple and externally.
-
-While there are other good libraries for base smart contracts, none of them satisfied the need to simultaneously be feature complete and allow to be used within our own style of development.
 
 ### Features
 - **No interfaces:** Contracts only define internal functionality and do not expose any external interfaces. Implementers are encouraged to mix and match the internal functions to cater to their specific needs.
@@ -22,7 +21,7 @@ While there are other good libraries for base smart contracts, none of them sati
 
 Responsible for deploying new Proxy instances and triggering initialization and migration logic atomically. 
 
-```
+```js
     contract ProxyFactory {
 
         /// @dev Registers a new implementation address attached to a version, which can be used with any uint256 versioning scheme.
@@ -49,7 +48,7 @@ Responsible for deploying new Proxy instances and triggering initialization and 
 
 The Proxy contract that is deployed and manages storage. It saves both and `implementation` and the `factory` addresses to be able to execute transactions and upgrades.
 
-```
+```js
 contract Proxy is SlotManipulatable {
 
     /// @dev Storage slot with the address of the current factory. This is the keccak-256 hash of "FACTORY_SLOT".
@@ -71,7 +70,7 @@ contract Proxy is SlotManipulatable {
 
 Helper contract that can manually modify storage when necessary (i.e., during a initialization/migration process)
 
- ```
+ ```js
  contract SlotManipulatable {
 
     /// @dev Returns the value stored at the given slot.
