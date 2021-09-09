@@ -7,7 +7,6 @@ Set of base contracts to deploy and manage versions on chain, designed to be min
 
 While there are other good libraries for base smart contracts, none of them satisfied the need to simultaneously be feature complete and allow to be used within our own style of development.
 
-
 ### Features
 - **No interfaces:** Contracts only define internal functionality and do not expose any external interfaces. Implementers are encouraged to mix and match the internal functions to cater to their specific needs.
 
@@ -23,13 +22,13 @@ While there are other good libraries for base smart contracts, none of them sati
 
 Responsible for deploying new Proxy instances and triggering initialization and migration logic atomically. 
 
-```js
+```
     contract ProxyFactory {
 
         /// @dev Registers a new implementation address attached to a version, which can be used with any uint256 versioning scheme.
         function _registerImplementation(uint256 version, address implementationAddress) internal virtual returns (bool success);
 
-        /// @dev Deploys a new Proxy instance of and calls the initialization function with provided arguments.
+        /// @dev Deploys a new Proxy instance and calls the initialization function with provided arguments.
         function _newInstance(uint256 version, bytes calldata arguments) internal virtual returns (bool success, address proxy);
 
         /// @dev Deploys a new new Proxy instance at a specific address using a salt and calls the initialization function with provided arguments.
@@ -38,7 +37,7 @@ Responsible for deploying new Proxy instances and triggering initialization and 
         /// @dev Calls the Proxy with arguments to perform the necessary initialization.
         function _initializeInstance(address proxy, uint256 version, bytes calldata arguments) internal virtual returns (bool success); 
 
-        /// @dev Registers a migration path between versions and optionally set a migrator contract
+        /// @dev Registers a migration path between versions and optionally sets a migrator contract.
         function _registerMigrationPath(uint256 fromVersion, uint256 toVersion, address migrator) internal virtual returns (bool success); 
 
         /// @dev Updates the implementation used by a Proxy.
@@ -50,7 +49,7 @@ Responsible for deploying new Proxy instances and triggering initialization and 
 
 The Proxy contract that is deployed and manages storage. It saves both and `implementation` and the `factory` addresses to be able to execute transactions and upgrades.
 
-```js
+```
 contract Proxy is SlotManipulatable {
 
     /// @dev Storage slot with the address of the current factory. This is the keccak-256 hash of "FACTORY_SLOT".
@@ -72,7 +71,7 @@ contract Proxy is SlotManipulatable {
 
 Helper contract that can manually modify storage when necessary (i.e., during a initialization/migration process)
 
- ```js
+ ```
  contract SlotManipulatable {
 
     /// @dev Returns the value stored at the given slot.
@@ -96,16 +95,13 @@ dapp update
 ```
 #### Running Tests
 - To run all tests: `make test` (runs `./test.sh`)
-- To run a specific test function: `./test.sh <test_name>` (e.g. `./test.sh test_composability`)
+- To run a specific test function: `./test.sh -t <test_name>` (e.g. `./test.sh test_composability`)
 
 This project was built using <a href="https://github.com/dapphub/dapptools">dapptools</a>
 
-
-
 ## Security
 
-The code is designed to be extended with needed feature, including access control and other guards on deployment and upgradeability, therefore it's not advised to use this as is. Additionally, it is still in development and haven't been externally audited. 
-
+The code is designed to be highly flexible and extensible, meaning that logic that is usually part of these functions (e.g., access controls) was not included. Therefore **it is strongly advised that these contracts be implemented with proper sanity checks, access controls and any extra logic necessary for security.**
 
 ## About Maple
 Maple is a decentralized corporate credit market. Maple provides capital to institutional borrowers through globally accessible fixed-income yield opportunities.
