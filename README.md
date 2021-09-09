@@ -9,11 +9,11 @@ While there are other good libraries for base smart contracts, none of them sati
 
 
 ### Features
-- **No interfaces:** contracts only define internal functionality and do not expose any external interfaces. Implementers are encouraged to mix and match the internal functions to cater to their specific needs.
+- **No interfaces:** Contracts only define internal functionality and do not expose any external interfaces. Implementers are encouraged to mix and match the internal functions to cater to their specific needs.
 
-- **Opt-In Upgrades:** proxy contracts were designed to be upgraded individually. 
+- **Opt-In Upgrades:** Proxy contracts were designed to be upgraded individually. 
 
-- **CREATE2:** contracts can be deployed with CREATE or CREATE2 opcodes, allowing the option for Proxy contracts to be deployed with deterministic addresses.
+- **CREATE2:** Contracts can be deployed with CREATE or CREATE2 opcodes, allowing the option for Proxy contracts to be deployed with deterministic addresses.
 
 - **Migration Contracts:** Architecture allows for intermediary contracts that can perform storage migration operations between two versions on upgrade, as well as perform initialize functionality on Proxy instantiation.
 
