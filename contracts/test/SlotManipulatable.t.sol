@@ -8,18 +8,6 @@ import { SlotManipulatable }  from "../SlotManipulatable.sol";
 contract StorageContract is SlotManipulatable {
 
     bytes32 private constant REFERENCE_SLOT    = 0x1111111111111111111111111111111111111111111111111111111111111111;
-    
-    /************************/
-    /*** Internal Helpers ***/
-    /************************/
-
-    function _setReferenceTypeOf(bytes32 slot, bytes32 key, bytes32 value) internal {
-        _setSlotValue(_getReferenceTypeSlot(slot, key), value);
-    }
-
-    /*****************/
-    /*** External ****/
-    /****************/
 
     function setSlotValue(bytes32 slot, bytes32 value) external {
         _setSlotValue(slot, value);
