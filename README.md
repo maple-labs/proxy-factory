@@ -3,52 +3,52 @@
 [![CircleCI](https://circleci.com/gh/maple-labs/proxy-factory/tree/main.svg?style=svg)](https://circleci.com/gh/maple-labs/proxy-factory/tree/main) [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
 
-Set of base contracts to deploy and manage versions on chain, designed to be minimally opinionated, extensible and gas-efficient.
+Set of base contracts to deploy and manage versions on chain, designed to be minimally opinionated, extensible and gas-efficient. These contracts were built to provide the necessary features to be reused across multiple projects, both within Maple and externally.
 
-It was built to provide the necessary features to be reused across multiple projects, both within Maple and externally. While there're some other good libraries for base smart contracts, none of them satisfied the need to simultaneously be feature complete and allow to be used within our own style of development. 
+While there are other good libraries for base smart contracts, none of them satisfied the need to simultaneously be feature complete and allow to be used within our own style of development.
 
 
 ### Features
-- No interfaces: the contracts only define the internal functionality and do not expose any kind external interface. Implementers are encouraged to mix and match the internal functions to cater for their specific need.
+- **No interfaces:** contracts only define internal functionality and do not expose any external interfaces. Implementers are encouraged to mix and match the internal functions to cater to their specific needs.
 
-- Opt In Upgrades: the base contracts designed to be upgraded on a one-to-one basis. 
+- **Opt-In Upgrades:** proxy contracts were designed to be upgraded individually. 
 
-- Create2: can perform both regular deployments, as well create2 deployments, where the contracts are deployed to a deterministic address, regardless of chain state.
+- **CREATE2:** contracts can be deployed with CREATE or CREATE2 opcodes, allowing the option for Proxy contracts to be deployed with deterministic addresses.
 
-- Migration Contracts: an intermediary contract that can perform housekeeping between one version and the next, as well a construction/instantiation.
+- **Migration Contracts:** Architecture allows for intermediary contracts that can perform storage migration operations between two versions on upgrade, as well as perform initialize functionality on Proxy instantiation.
 
 ### Contracts
 
 `ProxyFactory.sol`
 
-Responsible for deploying new instances and triggering initialization and migration logic atomically. 
+Responsible for deploying new Proxy instances and triggering initialization and migration logic atomically. 
 
 ```js
     contract ProxyFactory {
 
-        /// @dev Register a new implementation address attached to a version, which can be used with any scheme of versioning.
+        /// @dev Registers a new implementation address attached to a version, which can be used with any uint256 versioning scheme.
         function _registerImplementation(uint256 version, address implementationAddress) internal virtual returns (bool success);
 
-        /// @dev Deploys a new instance of and calls the initialization function with provided arguments
+        /// @dev Deploys a new Proxy instance of and calls the initialization function with provided arguments.
         function _newInstance(uint256 version, bytes calldata arguments) internal virtual returns (bool success, address proxy);
 
-        /// @dev Deploys a new instance at a specific address using the salt and calls the initialization function with provided arguments
+        /// @dev Deploys a new new Proxy instance at a specific address using a salt and calls the initialization function with provided arguments.
         function _newInstanceWithSalt(uint256 version, bytes calldata arguments, bytes32 salt) internal virtual returns (bool success, address proxy); 
 
-        /// @dev Calls the proxy with arguments to perform the necessary initialization
+        /// @dev Calls the Proxy with arguments to perform the necessary initialization.
         function _initializeInstance(address proxy, uint256 version, bytes calldata arguments) internal virtual returns (bool success); 
 
-        /// @dev Register a possible migration path and optionally sets a migrator contract
+        /// @dev Registers a migration path between versions and optionally set a migrator contract
         function _registerMigrationPath(uint256 fromVersion, uint256 toVersion, address migrator) internal virtual returns (bool success); 
 
-        /// @dev Updates the implementation used by a proxy.
+        /// @dev Updates the implementation used by a Proxy.
         function _upgradeInstance(address proxy, uint256 toVersion, bytes calldata arguments) internal virtual returns (bool success); 
     }
 ```
 
 `Proxy.sol`
 
-The slim contract that is deployed. It saves both and `implementation` and the `factory` address to be able to execute transactions and upgrades.
+The Proxy contract that is deployed and manages storage. It saves both and `implementation` and the `factory` addresses to be able to execute transactions and upgrades.
 
 ```js
 contract Proxy is SlotManipulatable {
@@ -56,13 +56,13 @@ contract Proxy is SlotManipulatable {
     /// @dev Storage slot with the address of the current factory. This is the keccak-256 hash of "FACTORY_SLOT".
     bytes32 private constant FACTORY_SLOT = 0xf2db84db8157f5a01a257d644038e8929d5a62c9ffa8b736374913908897e5bb;
 
-    /// @dev Storage slot with the address of the current factory. This is the keccak-256 hash of "IMPLEMENTATION_SLOT".
+    /// @dev Storage slot with the address of the current implementation. This is the keccak-256 hash of "IMPLEMENTATION_SLOT".
     bytes32 private constant IMPLEMENTATION_SLOT = 0xf603533e14e17222e047634a2b3457fe346d27e294cedf9d21d74e5feea4a046;
 
-    /// @dev Function to be called right after deployment, similar to a constructor in regular contracts.
+    /// @dev Function to be called right after deployment, to set the `implementation` and the `factory` addresses in storage.
     function _setup() private; 
 
-    /// @dev Function to delegatecall all incoming function to `implementation`
+    /// @dev Function to delegatecall all incoming functions to the `implementation` address.
     fallback() payable external virtual; 
 
 }
@@ -70,18 +70,18 @@ contract Proxy is SlotManipulatable {
 
 `SlotManipulatable.sol`
 
-Helper contract that allow to manually modify storage that might be needed during a migration process
+Helper contract that can manually modify storage when necessary (i.e., during a initialization/migration process)
 
  ```js
  contract SlotManipulatable {
 
-    /// @dev returns the value stored at slot
+    /// @dev Returns the value stored at the given slot.
     function _getSlotValue(bytes32 slot) internal view returns (bytes32 value); 
 
-    /// @dev set the storage slot to the given value
+    /// @dev Sets the value stored at the given slot.
     function _setSlotValue(bytes32 slot, bytes32 value) internal; 
 
-    // @dev Get the storage slot for a reference type
+    // @dev Returns the storage slot for a reference type.
     function _getReferenceTypeSlot(bytes32 slot, bytes32 key) internal pure returns (bytes32 value); 
 
 }
