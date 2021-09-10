@@ -7,7 +7,7 @@ import { SlotManipulatable }  from "../SlotManipulatable.sol";
 
 contract StorageContract is SlotManipulatable {
 
-    bytes32 private constant REFERENCE_SLOT    = 0x1111111111111111111111111111111111111111111111111111111111111111;
+    bytes32 private constant REFERENCE_SLOT = 0x1111111111111111111111111111111111111111111111111111111111111111;
 
     function setSlotValue(bytes32 slot, bytes32 value) external {
         _setSlotValue(slot, value);
@@ -62,6 +62,13 @@ contract SlotManipulatableTest is DSTest {
 
         assertEq(uint8(uint256(storageContract.getSlotValue(bytes32(0)))), value);
     }
+
+    function test_setAndRetrieve_bytes4(bytes4 value) external {
+        storageContract.setSlotValue(bytes32(0), bytes32(value));
+
+        assertEq(bytes4(storageContract.getSlotValue(bytes32(0))), value);
+    }
+
 
     function test_referenceType(bytes32 key, bytes32 value) external {
         storageContract.setReferenceValue(key, value);

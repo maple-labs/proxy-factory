@@ -185,11 +185,11 @@ contract Test is DSTest {
         // Check state before migration.
         assertEq(IMockImplementationV1(proxy).implementation(),  address(implementationV1));
 
-        assertEq(IMockImplementationV1(proxy).beta(),      7575);  // Is old beta.
-        assertEq(IMockImplementationV1(proxy).charlie(),   1414);  // Is old charlie.
-        assertEq(IMockImplementationV1(proxy).deltaOf(2),  3030);  // Should remain unchanged.
-        assertEq(IMockImplementationV1(proxy).deltaOf(4),  9944);  // Should remain unchanged.
-        assertEq(IMockImplementationV1(proxy).deltaOf(15), 2323);  // Should remain unchanged.
+        assertEq(IMockImplementationV1(proxy).beta(),      7575);
+        assertEq(IMockImplementationV1(proxy).charlie(),   1414); 
+        assertEq(IMockImplementationV1(proxy).deltaOf(2),  3030); 
+        assertEq(IMockImplementationV1(proxy).deltaOf(4),  9944); 
+        assertEq(IMockImplementationV1(proxy).deltaOf(15), 2323); 
 
         assertEq(IMockImplementationV1(proxy).getLiteral(),  2222);
         assertEq(IMockImplementationV1(proxy).getConstant(), 1111);
@@ -203,9 +203,9 @@ contract Test is DSTest {
 
         assertEq(IMockImplementationV2(proxy).charlie(),   7575);  // Is old beta.
         assertEq(IMockImplementationV2(proxy).echo(),      1414);  // Is old charlie.
-        assertEq(IMockImplementationV2(proxy).derbyOf(2),  3030);  // Should remain unchanged.
-        assertEq(IMockImplementationV2(proxy).derbyOf(4),  9944);  // Should remain unchanged.
-        assertEq(IMockImplementationV2(proxy).derbyOf(15), 2323);  // Should remain unchanged.
+        assertEq(IMockImplementationV2(proxy).derbyOf(2),  3030);  // Delta was renamed to Derby, but the values remain unchanged.
+        assertEq(IMockImplementationV2(proxy).derbyOf(4),  9944);  // Delta was renamed to Derby, but the values remain unchanged.
+        assertEq(IMockImplementationV2(proxy).derbyOf(15), 2323);  // Delta was renamed to Derby, but the values remain unchanged.
 
         assertEq(IMockImplementationV2(proxy).getLiteral(),  4444);
         assertEq(IMockImplementationV2(proxy).getConstant(), 5555);
@@ -242,27 +242,29 @@ contract Test is DSTest {
         // Check state before migration.
         assertEq(IMockImplementationV1(proxy).implementation(),  address(implementationV1));
 
-        assertEq(IMockImplementationV1(proxy).beta(),      7575);  // Is old beta.
-        assertEq(IMockImplementationV1(proxy).charlie(),   1414);  // Is old charlie.
-        assertEq(IMockImplementationV1(proxy).deltaOf(2),  3030);  // Should remain unchanged.
-        assertEq(IMockImplementationV1(proxy).deltaOf(4),  9944);  // Should remain unchanged.
-        assertEq(IMockImplementationV1(proxy).deltaOf(15), 2323);  // Should remain unchanged.
+        assertEq(IMockImplementationV1(proxy).beta(),      7575);  
+        assertEq(IMockImplementationV1(proxy).charlie(),   1414);  
+        assertEq(IMockImplementationV1(proxy).deltaOf(2),  3030);  
+        assertEq(IMockImplementationV1(proxy).deltaOf(4),  9944);  
+        assertEq(IMockImplementationV1(proxy).deltaOf(15), 2323);
 
         assertEq(IMockImplementationV1(proxy).getLiteral(),  2222);
         assertEq(IMockImplementationV1(proxy).getConstant(), 1111);
         assertEq(IMockImplementationV1(proxy).getViewable(), 7575);
 
+        uint256 migrationArgument = 9090;
+
         // Migrate proxy from V1 to V2.
-        factory.upgradeInstance(proxy, 2, abi.encode(uint256(9090)));
+        factory.upgradeInstance(proxy, 2, abi.encode(migrationArgument));
 
         // Check if migration was successful.
         assertEq(IMockImplementationV2(proxy).implementation(),  address(implementationV2));
 
-        assertEq(IMockImplementationV2(proxy).charlie(),   2828);  // Should be doubled from V1.
+        assertEq(IMockImplementationV2(proxy).charlie(),   2828);              // Should be doubled from V1.
         assertEq(IMockImplementationV2(proxy).echo(),      3333);
-        assertEq(IMockImplementationV2(proxy).derbyOf(2),  3030);  // Should remain unchanged.
-        assertEq(IMockImplementationV2(proxy).derbyOf(4),  1188);  // Should be different due to migration case.
-        assertEq(IMockImplementationV2(proxy).derbyOf(15), 9090);  // Should have been overwritten by migration arg.
+        assertEq(IMockImplementationV2(proxy).derbyOf(2),  3030);              // Delta from V1 was renamed to Derby
+        assertEq(IMockImplementationV2(proxy).derbyOf(4),  1188);              // Should be different due to migration case.
+        assertEq(IMockImplementationV2(proxy).derbyOf(15), migrationArgument); // Should have been overwritten by migration arg.
 
         assertEq(IMockImplementationV2(proxy).getLiteral(),  4444);
         assertEq(IMockImplementationV2(proxy).getConstant(), 5555);
@@ -299,25 +301,25 @@ contract Test is DSTest {
         // Check state before migration.
         assertEq(IMockImplementationV1(proxy).implementation(),  address(implementationV1));
 
-        assertEq(IMockImplementationV1(proxy).beta(),      7575);  // Is old beta.
-        assertEq(IMockImplementationV1(proxy).charlie(),   1414);  // Is old charlie.
-        assertEq(IMockImplementationV1(proxy).deltaOf(2),  3030);  // Should remain unchanged.
-        assertEq(IMockImplementationV1(proxy).deltaOf(4),  9944);  // Should remain unchanged.
-        assertEq(IMockImplementationV1(proxy).deltaOf(15), 2323);  // Should remain unchanged.
+        assertEq(IMockImplementationV1(proxy).beta(),      7575); 
+        assertEq(IMockImplementationV1(proxy).charlie(),   1414); 
+        assertEq(IMockImplementationV1(proxy).deltaOf(2),  3030); 
+        assertEq(IMockImplementationV1(proxy).deltaOf(4),  9944); 
+        assertEq(IMockImplementationV1(proxy).deltaOf(15), 2323); 
 
         assertEq(IMockImplementationV1(proxy).getLiteral(),  2222);
         assertEq(IMockImplementationV1(proxy).getConstant(), 1111);
         assertEq(IMockImplementationV1(proxy).getViewable(), 7575);
 
         // Migrate proxy from V1 to V2.
-        factory.upgradeInstance(proxy, 2, abi.encode(uint256(9090)));
+        factory.upgradeInstance(proxy, 2, new bytes(0));
 
         // Check if migration was successful.
         assertEq(IMockImplementationV2(proxy).implementation(),  address(implementationV2));
 
         assertEq(IMockImplementationV2(proxy).charlie(),   2828);  // Should be doubled from V1.
         assertEq(IMockImplementationV2(proxy).echo(),      3333);
-        assertEq(IMockImplementationV2(proxy).derbyOf(2),  3030);  // Should remain unchanged.
+        assertEq(IMockImplementationV2(proxy).derbyOf(2),  3030);  // Delta from V1 was renamed to Derby
         assertEq(IMockImplementationV2(proxy).derbyOf(4),  1188);  // Should be different due to migration case.
         assertEq(IMockImplementationV2(proxy).derbyOf(15), 15); 
 
@@ -337,7 +339,6 @@ contract Test is DSTest {
         assertEq(proxy, 0x6FD86f82E0D16465c7c9898971A545B83d43a9e0);
     }
      
-
     function testFail_newInstanceWithSalt() public {
         MockFactory          factory        = new MockFactory();
         MockImplementationV1 implementation = new MockImplementationV1();
