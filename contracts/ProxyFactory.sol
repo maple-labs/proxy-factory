@@ -24,6 +24,7 @@ contract ProxyFactory {
     }
 
     function _newInstance(uint256 version, bytes calldata arguments) internal virtual returns (bool success, address proxy) {
+        require(_implementation[version] != address(0), "PF:NI:NO_IMPLEMENTATION");
         proxy   = address(new Proxy());
         success = _initializeInstance(proxy, version, arguments);
     }

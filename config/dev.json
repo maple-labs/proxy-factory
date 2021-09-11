@@ -6,6 +6,11 @@
     },
     "contracts/test/Test.t.sol": {
       "urls": ["contracts/test/Test.t.sol"]
+    },
+    "contracts/test/SlotManipulatable.t.sol": {
+      "urls": [
+        "contracts/test/SlotManipulatable.t.sol"
+      ]
     }
   },
   "settings": {
