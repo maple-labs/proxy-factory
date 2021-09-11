@@ -348,13 +348,13 @@ contract Test is DSTest {
         factory.newInstanceWithSalt(1, new bytes(0), "salt");
     }
 
-    function testFail_newInstance_nonRegistered_implementation() public {
+    function testFail_newInstance_nonRegisteredImplementation() public {
         MockFactory factory = new MockFactory();
 
         address proxy = factory.newInstance(1, new bytes(0));
     }
 
-    function testFail_upgrade_nonRegistered_implementation() public {
+    function testFail_upgrade_nonRegisteredImplementation() public {
         MockFactory          factory          = new MockFactory();
         MockInitializerV1    initializerV1    = new MockInitializerV1();
         MockImplementationV1 implementationV1 = new MockImplementationV1();
