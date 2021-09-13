@@ -57,7 +57,7 @@ contract Test is DSTest {
         MockInitializerV1    initializer    = new MockInitializerV1();
         MockImplementationV1 implementation = new MockImplementationV1();
 
-        factory.registerMigrationPath(1, 1, address(initializer));
+        factory.registerMigrator(1, 1, address(initializer));
         factory.registerImplementation(1, address(implementation));
 
         assertEq(factory.implementation(1),                  address(implementation));
@@ -95,7 +95,7 @@ contract Test is DSTest {
         MockInitializerV2    initializer    = new MockInitializerV2();
         MockImplementationV2 implementation = new MockImplementationV2();
 
-        factory.registerMigrationPath(2, 2, address(initializer));
+        factory.registerMigrator(2, 2, address(initializer));
         factory.registerImplementation(2, address(implementation));
 
         assertEq(factory.implementation(2),                  address(implementation));
@@ -131,7 +131,7 @@ contract Test is DSTest {
         MockInitializerV1    initializer    = new MockInitializerV1();
         MockImplementationV1 implementation = new MockImplementationV1();
 
-        factory.registerMigrationPath(1, 1, address(initializer));
+        factory.registerMigrator(1, 1, address(initializer));
         factory.registerImplementation(1, address(implementation));
 
         IMockImplementationV1 proxy1 = IMockImplementationV1(factory.newInstance(1, new bytes(0)));
@@ -165,7 +165,7 @@ contract Test is DSTest {
         MockImplementationV2 implementationV2 = new MockImplementationV2();
 
         // Register V1, its initializer, and deploy a proxy.
-        factory.registerMigrationPath(1, 1, address(initializerV1));
+        factory.registerMigrator(1, 1, address(initializerV1));
         factory.registerImplementation(1, address(implementationV1));
         address proxy = factory.newInstance(1, new bytes(0));
 
@@ -177,7 +177,7 @@ contract Test is DSTest {
         IMockImplementationV1(proxy).setDeltaOf(15, 2323);
 
         // Register V2, its initializer, and a migrator.
-        factory.registerMigrationPath(2, 2, address(initializerV2));
+        factory.registerMigrator(2, 2, address(initializerV2));
         factory.registerImplementation(2, address(implementationV2));
 
         assertEq(factory.migratorForPath(1, 2), address(0));
@@ -221,7 +221,7 @@ contract Test is DSTest {
         MockImplementationV2 implementationV2 = new MockImplementationV2();
 
         // Register V1, its initializer, and deploy a proxy.
-        factory.registerMigrationPath(1, 1, address(initializerV1));
+        factory.registerMigrator(1, 1, address(initializerV1));
         factory.registerImplementation(1, address(implementationV1));
         address proxy = factory.newInstance(1, new bytes(0));
 
@@ -233,8 +233,8 @@ contract Test is DSTest {
         IMockImplementationV1(proxy).setDeltaOf(15, 2323);
 
         // Register V2, its initializer, and a migrator.
-        factory.registerMigrationPath(2, 2, address(initializerV2));
-        factory.registerMigrationPath(1, 2, address(migrator));
+        factory.registerMigrator(2, 2, address(initializerV2));
+        factory.registerMigrator(1, 2, address(migrator));
         factory.registerImplementation(2, address(implementationV2));
 
         assertEq(factory.migratorForPath(1, 2), address(migrator));
@@ -280,7 +280,7 @@ contract Test is DSTest {
         MockImplementationV2         implementationV2 = new MockImplementationV2();
 
         // Register V1, its initializer, and deploy a proxy.
-        factory.registerMigrationPath(1, 1, address(initializerV1));
+        factory.registerMigrator(1, 1, address(initializerV1));
         factory.registerImplementation(1, address(implementationV1));
         address proxy = factory.newInstance(1, new bytes(0));
 
@@ -292,8 +292,8 @@ contract Test is DSTest {
         IMockImplementationV1(proxy).setDeltaOf(15, 2323);
 
         // Register V2, its initializer, and a migrator.
-        factory.registerMigrationPath(2, 2, address(initializerV2));
-        factory.registerMigrationPath(1, 2, address(migrator));
+        factory.registerMigrator(2, 2, address(initializerV2));
+        factory.registerMigrator(1, 2, address(migrator));
         factory.registerImplementation(2, address(implementationV2));
 
         assertEq(factory.migratorForPath(1, 2), address(migrator));
@@ -350,8 +350,7 @@ contract Test is DSTest {
 
     function testFail_newInstance_nonRegisteredImplementation() public {
         MockFactory factory = new MockFactory();
-
-        address proxy = factory.newInstance(1, new bytes(0));
+        factory.newInstance(1, new bytes(0));
     }
 
     function testFail_upgrade_nonRegisteredImplementation() public {
@@ -360,7 +359,7 @@ contract Test is DSTest {
         MockImplementationV1 implementationV1 = new MockImplementationV1();
 
         // Register V1, its initializer, and deploy a proxy.
-        factory.registerMigrationPath(1, 1, address(initializerV1));
+        factory.registerMigrator(1, 1, address(initializerV1));
         factory.registerImplementation(1, address(implementationV1));
         address proxy = factory.newInstance(1, new bytes(0));
 

@@ -23,13 +23,13 @@ contract ProxyFactory {
         return true;
     }
 
-    function _newInstance(uint256 version, bytes calldata arguments) internal virtual returns (bool success, address proxy) {
+    function _newInstance(uint256 version, bytes memory arguments) internal virtual returns (bool success, address proxy) {
         require(_implementation[version] != address(0), "PF:NI:NO_IMPLEMENTATION");
         proxy   = address(new Proxy());
         success = _initializeInstance(proxy, version, arguments);
     }
 
-    function _newInstanceWithSalt(uint256 version, bytes calldata arguments, bytes32 salt) internal virtual returns (bool success, address proxy) {
+    function _newInstanceWithSalt(uint256 version, bytes memory arguments, bytes32 salt) internal virtual returns (bool success, address proxy) {
         bytes memory creationCode = type(Proxy).creationCode;
 
         assembly {
@@ -41,7 +41,7 @@ contract ProxyFactory {
         success = _initializeInstance(proxy, version, arguments);
     }
 
-    function _initializeInstance(address proxy, uint256 version, bytes calldata arguments) internal virtual returns (bool success) {
+    function _initializeInstance(address proxy, uint256 version, bytes memory arguments) internal virtual returns (bool success) {
         (success, ) = proxy.call(abi.encode(address(this), _implementation[version]));
 
         if (!success) return false;
@@ -53,12 +53,12 @@ contract ProxyFactory {
         (success, ) = proxy.call(abi.encodeWithSelector(IProxied.migrate.selector, initializer, arguments));
     }
 
-    function _registerMigrationPath(uint256 fromVersion, uint256 toVersion, address migrator) internal virtual returns (bool success) {
+    function _registerMigrator(uint256 fromVersion, uint256 toVersion, address migrator) internal virtual returns (bool success) {
         _migratorForPath[fromVersion][toVersion] = migrator;
         return true;
     }
 
-    function _upgradeInstance(address proxy, uint256 toVersion, bytes calldata arguments) internal virtual returns (bool success) {
+    function _upgradeInstance(address proxy, uint256 toVersion, bytes memory arguments) internal virtual returns (bool success) {
         address migrator       = _migratorForPath[_versionOf[IProxied(proxy).implementation()]][toVersion];
         address implementation = _implementation[toVersion];
 
