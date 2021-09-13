@@ -76,7 +76,7 @@ contract MockInitializerV1 is SlotManipulatable {
 interface IMockImplementationV1 is IProxied {
 
     function alpha() external view returns (uint256 alpha_);
-    
+
     function beta() external view returns (uint256 beta_);
 
     function charlie() external view returns (uint256 charlie_);
@@ -240,7 +240,7 @@ contract MockImplementationV2 is IMockImplementationV2, Proxied {
     function setEcho(uint256 echo_) external override {
         echo = echo_;
     }
-    
+
     function derbyOf(uint256 key_) public view override returns (uint256) {
         return uint256(_getSlotValue(_getReferenceTypeSlot(DERBY_SLOT, bytes32(key_))));
     }

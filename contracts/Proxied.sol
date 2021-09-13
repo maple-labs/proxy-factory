@@ -36,7 +36,7 @@ contract Proxied is IProxied, SlotManipulatable {
         require(_migrate(migrator_, arguments_), "P:M:MIGRATION_FAILED");
     }
 
-    function _migrate(address migrator_, bytes calldata arguments_) internal virtual returns (bool success_) { 
+    function _migrate(address migrator_, bytes calldata arguments_) internal virtual returns (bool success_) {
         (success_,) = migrator_.delegatecall(arguments_);
     }
 

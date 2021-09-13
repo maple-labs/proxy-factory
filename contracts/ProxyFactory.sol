@@ -6,7 +6,7 @@ import { IProxied } from "./interfaces/IProxied.sol";
 import { Proxy } from "./Proxy.sol";
 
 contract ProxyFactory {
-  
+
     mapping(uint256 => address) internal _implementation;
 
     mapping(address => uint256) internal _versionOf;
@@ -37,7 +37,7 @@ contract ProxyFactory {
         }
 
         if (proxy_ == address(0)) return (false, proxy_);
-    
+
         success_ = _initializeInstance(proxy_, version_, arguments_);
     }
 
@@ -63,7 +63,7 @@ contract ProxyFactory {
         address implementation = _implementation[toVersion_];
 
         require(implementation != address(0), "PF:UI:NO_IMPLEMENTATION");
-        
+
         IProxied(proxy_).setImplementation(implementation);
 
         if (migrator == address(0)) return true;

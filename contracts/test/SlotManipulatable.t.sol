@@ -34,7 +34,7 @@ contract StorageContract is SlotManipulatable {
 contract SlotManipulatableTest is DSTest {
 
     StorageContract storageContract;
-    
+
     function setUp() external {
         storageContract = new StorageContract();
     }
