@@ -116,15 +116,15 @@ contract MockImplementationV1 is IMockImplementationV1, Proxied {
     // NOTE: This is implemented manually in order to support upgradeability and migrations
     // mapping(uint256 => uint256) public override deltaOf;
 
-    function getLiteral() external pure override returns (uint256 _literal) {
+    function getLiteral() external pure override returns (uint256 literal_) {
         return 2222;
     }
 
-    function getConstant() external pure override returns (uint256 _constant) {
+    function getConstant() external pure override returns (uint256 constant_) {
         return alpha;
     }
 
-    function getViewable() external view override returns (uint256 _viewable) {
+    function getViewable() external view override returns (uint256 viewable_) {
         return beta;
     }
 
