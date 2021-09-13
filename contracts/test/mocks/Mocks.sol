@@ -10,7 +10,7 @@ import { SlotManipulatable } from "../../SlotManipulatable.sol";
 contract MockFactory is ProxyFactory {
 
     function implementation(uint256 version_) external view returns (address implementation_) {
-        return _implementation[version_];
+        return _implementationOf[version_];
     }
 
     function migratorForPath(uint256 fromVersion_, uint256 toVersion_) external view returns (address migrator_) {
