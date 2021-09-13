@@ -37,8 +37,8 @@ contract MockFactory is ProxyFactory {
         require(success);
     }
 
-    function registerMigrationPath(uint256 fromVersion, uint256 toVersion, address migrator) external {
-        require(_registerMigrationPath(fromVersion, toVersion, migrator));
+    function registerMigrator(uint256 fromVersion, uint256 toVersion, address migrator) external {
+        require(_registerMigrator(fromVersion, toVersion, migrator));
     }
 
     function upgradeInstance(address proxy, uint256 toVersion, bytes calldata migrationArguments) external {

@@ -53,7 +53,7 @@ contract ProxyFactory {
         (success, ) = proxy.call(abi.encodeWithSelector(IProxied.migrate.selector, initializer, arguments));
     }
 
-    function _registerMigrationPath(uint256 fromVersion, uint256 toVersion, address migrator) internal virtual returns (bool success) {
+    function _registerMigrator(uint256 fromVersion, uint256 toVersion, address migrator) internal virtual returns (bool success) {
         _migratorForPath[fromVersion][toVersion] = migrator;
         return true;
     }

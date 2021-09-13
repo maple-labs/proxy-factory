@@ -36,8 +36,8 @@ Responsible for deploying new Proxy instances and triggering initialization and 
         /// @dev Calls the Proxy with arguments to perform the necessary initialization.
         function _initializeInstance(address proxy, uint256 version, bytes calldata arguments) internal virtual returns (bool success); 
 
-        /// @dev Registers a migration path between versions and optionally sets a migrator contract.
-        function _registerMigrationPath(uint256 fromVersion, uint256 toVersion, address migrator) internal virtual returns (bool success); 
+        /// @dev Registers a migrator contract to be used to optionally migrate between versions, when upgrading.
+        function _registerMigrator(uint256 fromVersion, uint256 toVersion, address migrator) internal virtual returns (bool success); 
 
         /// @dev Updates the implementation used by a Proxy.
         function _upgradeInstance(address proxy, uint256 toVersion, bytes calldata arguments) internal virtual returns (bool success); 
