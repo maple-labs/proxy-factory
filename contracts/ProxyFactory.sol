@@ -24,12 +24,17 @@ contract ProxyFactory {
     }
 
     function _newInstance(uint256 version_, bytes memory arguments_) internal virtual returns (bool success_, address proxy_) {
-        require(_implementation[version_] != address(0), "PF:NI:NO_IMPLEMENTATION");
+        address implementation = _implementation[version_];
+        require(implementation != address(0), "PF:NI:NO_IMPLEMENTATION");
+
         proxy_   = address(new Proxy());
-        success_ = _initializeInstance(proxy_, version_, arguments_);
+        success_ = _initializeInstance(proxy_, version_, implementation, arguments_);
     }
 
     function _newInstanceWithSalt(uint256 version_, bytes memory arguments_, bytes32 salt_) internal virtual returns (bool success_, address proxy_) {
+        address implementation = _implementation[version_];
+        require(implementation != address(0), "PF:NI:NO_IMPLEMENTATION");
+
         bytes memory creationCode = type(Proxy).creationCode;
 
         assembly {
@@ -38,11 +43,11 @@ contract ProxyFactory {
 
         if (proxy_ == address(0)) return (false, proxy_);
 
-        success_ = _initializeInstance(proxy_, version_, arguments_);
+        success_ = _initializeInstance(proxy_, version_, implementation, arguments_);
     }
 
-    function _initializeInstance(address proxy_, uint256 version_, bytes memory arguments_) internal virtual returns (bool success_) {
-        (success_, ) = proxy_.call(abi.encode(address(this), _implementation[version_]));
+    function _initializeInstance(address proxy_, uint256 version_, address implementation_, bytes memory arguments_) internal virtual returns (bool success_) {
+        (success_, ) = proxy_.call(abi.encode(address(this), implementation_));
 
         if (!success_) return false;
 
