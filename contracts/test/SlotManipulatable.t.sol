@@ -9,24 +9,24 @@ contract StorageContract is SlotManipulatable {
 
     bytes32 private constant REFERENCE_SLOT = 0x1111111111111111111111111111111111111111111111111111111111111111;
 
-    function setSlotValue(bytes32 slot, bytes32 value) external {
-        _setSlotValue(slot, value);
+    function setSlotValue(bytes32 slot_, bytes32 value_) external {
+        _setSlotValue(slot_, value_);
     }
 
-    function setReferenceValue(bytes32 key, bytes32 value) external {
-        _setSlotValue(_getReferenceTypeSlot(REFERENCE_SLOT, bytes32(key)), value);
+    function setReferenceValue(bytes32 key_, bytes32 value_) external {
+        _setSlotValue(_getReferenceTypeSlot(REFERENCE_SLOT, bytes32(key_)), value_);
     }
 
-    function getSlotValue(bytes32 slot) external view returns (bytes32 value) {
-        value = _getSlotValue(slot);
+    function getSlotValue(bytes32 slot_) external view returns (bytes32 value_) {
+        value_ = _getSlotValue(slot_);
     }
 
-    function getReferenceValue(bytes32 key) external view returns (bytes32 value) {
-        value = _getSlotValue(_getReferenceTypeSlot(REFERENCE_SLOT, key));
+    function getReferenceValue(bytes32 key_) external view returns (bytes32 value_) {
+        value_ = _getSlotValue(_getReferenceTypeSlot(REFERENCE_SLOT, key_));
     }
 
-    function getReferenceSlot(bytes32 slot, bytes32 key) external pure returns (bytes32) {
-        return _getReferenceTypeSlot(REFERENCE_SLOT, _getReferenceTypeSlot(slot, key));
+    function getReferenceSlot(bytes32 slot_, bytes32 key) external pure returns (bytes32 referenceSlot_) {
+        return _getReferenceTypeSlot(REFERENCE_SLOT, _getReferenceTypeSlot(slot_, key));
     }
 
 }
@@ -34,54 +34,53 @@ contract StorageContract is SlotManipulatable {
 contract SlotManipulatableTest is DSTest {
 
     StorageContract storageContract;
-    
+
     function setUp() external {
         storageContract = new StorageContract();
     }
 
-    function test_setAndRetrieve_uint256(uint256 value) external {
-        storageContract.setSlotValue(bytes32(0), bytes32(value));
+    function test_setAndRetrieve_uint256(uint256 value_) external {
+        storageContract.setSlotValue(bytes32(0), bytes32(value_));
 
-        assertEq(uint256(storageContract.getSlotValue(bytes32(0))), value);
+        assertEq(uint256(storageContract.getSlotValue(bytes32(0))), value_);
     }
 
-    function test_setAndRetrieve_address(address value) external {
-        storageContract.setSlotValue(bytes32(0), bytes32(uint256(uint160(value))));
+    function test_setAndRetrieve_address(address value_) external {
+        storageContract.setSlotValue(bytes32(0), bytes32(uint256(uint160(value_))));
 
-        assertEq(address(uint160(uint256(storageContract.getSlotValue(bytes32(0))))), value);
+        assertEq(address(uint160(uint256(storageContract.getSlotValue(bytes32(0))))), value_);
     }
 
-    function test_setAndRetrieve_bytes32(bytes32 value) external {
-        storageContract.setSlotValue(bytes32(0), value);
+    function test_setAndRetrieve_bytes32(bytes32 value_) external {
+        storageContract.setSlotValue(bytes32(0), value_);
 
-        assertEq(storageContract.getSlotValue(bytes32(0)), value);
+        assertEq(storageContract.getSlotValue(bytes32(0)), value_);
     }
 
-    function test_setAndRetrieve_uint8(uint8 value) external {
-        storageContract.setSlotValue(bytes32(0), bytes32(uint256(value)));
+    function test_setAndRetrieve_uint8(uint8 value_) external {
+        storageContract.setSlotValue(bytes32(0), bytes32(uint256(value_)));
 
-        assertEq(uint8(uint256(storageContract.getSlotValue(bytes32(0)))), value);
+        assertEq(uint8(uint256(storageContract.getSlotValue(bytes32(0)))), value_);
     }
 
-    function test_setAndRetrieve_bytes4(bytes4 value) external {
-        storageContract.setSlotValue(bytes32(0), bytes32(value));
+    function test_setAndRetrieve_bytes4(bytes4 value_) external {
+        storageContract.setSlotValue(bytes32(0), bytes32(value_));
 
-        assertEq(bytes4(storageContract.getSlotValue(bytes32(0))), value);
+        assertEq(bytes4(storageContract.getSlotValue(bytes32(0))), value_);
     }
 
+    function test_referenceType(bytes32 key_, bytes32 value_) external {
+        storageContract.setReferenceValue(key_, value_);
 
-    function test_referenceType(bytes32 key, bytes32 value) external {
-        storageContract.setReferenceValue(key, value);
-
-        assertEq(storageContract.getReferenceValue(key), value);
+        assertEq(storageContract.getReferenceValue(key_), value_);
     }
 
-    function test_doubleReferenceType(bytes32 key, bytes32 index, bytes32 value) external {
-        bytes32 slot = storageContract.getReferenceSlot(key, index);
+    function test_doubleReferenceType(bytes32 key_, bytes32 index_, bytes32 value_) external {
+        bytes32 slot = storageContract.getReferenceSlot(key_, index_);
 
-        storageContract.setReferenceValue(slot, value);
+        storageContract.setReferenceValue(slot, value_);
 
-        assertEq(storageContract.getReferenceValue(slot), value);
+        assertEq(storageContract.getReferenceValue(slot), value_);
     }
 
 }

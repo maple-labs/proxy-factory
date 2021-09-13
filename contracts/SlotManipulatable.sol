@@ -3,20 +3,20 @@ pragma solidity ^0.8.7;
 
 contract SlotManipulatable {
 
-    function _getSlotValue(bytes32 slot) internal view returns (bytes32 value) {
+    function _getSlotValue(bytes32 slot_) internal view returns (bytes32 value_) {
         assembly {
-            value := sload(slot)
+            value_ := sload(slot_)
         }
     }
 
-    function _setSlotValue(bytes32 slot, bytes32 value) internal {
+    function _setSlotValue(bytes32 slot_, bytes32 value_) internal {
         assembly {
-            sstore(slot, value)
+            sstore(slot_, value_)
         }
     }
 
-    function _getReferenceTypeSlot(bytes32 slot, bytes32 key) internal pure returns (bytes32 value) {
-        return keccak256(abi.encodePacked(key, slot));
+    function _getReferenceTypeSlot(bytes32 slot_, bytes32 key_) internal pure returns (bytes32 value_) {
+        return keccak256(abi.encodePacked(key_, slot_));
     }
 
 }

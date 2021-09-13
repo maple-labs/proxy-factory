@@ -9,40 +9,40 @@ import { SlotManipulatable } from "../../SlotManipulatable.sol";
 
 contract MockFactory is ProxyFactory {
 
-    function implementation(uint256 version) external view returns (address) {
-        return _implementation[version];
+    function implementation(uint256 version_) external view returns (address implementation_) {
+        return _implementationOf[version_];
     }
 
-    function migratorForPath(uint256 fromVersion, uint256 toVersion) external view returns (address) {
-        return _migratorForPath[fromVersion][toVersion];
+    function migratorForPath(uint256 fromVersion_, uint256 toVersion_) external view returns (address migrator_) {
+        return _migratorForPath[fromVersion_][toVersion_];
     }
 
-    function versionOf(address proxy) external view returns (uint256) {
-        return _versionOf[proxy];
+    function versionOf(address proxy_) external view returns (uint256 version_) {
+        return _versionOf[proxy_];
     }
 
-    function registerImplementation(uint256 version, address implementationAddress) external {
-        require(_registerImplementation(version, implementationAddress));
+    function registerImplementation(uint256 version_, address implementationAddress_) external {
+        require(_registerImplementation(version_, implementationAddress_));
     }
 
-    function newInstance(uint256 version, bytes calldata initializationArguments) external returns (address proxy) {
+    function newInstance(uint256 version_, bytes calldata initializationArguments_) external returns (address proxy_) {
         bool success;
-        (success, proxy) = _newInstance(version, initializationArguments);
+        (success, proxy_) = _newInstance(version_, initializationArguments_);
         require(success);
     }
 
-    function newInstanceWithSalt(uint256 version, bytes calldata initializationArguments, bytes32 salt) external returns (address proxy) {
+    function newInstanceWithSalt(uint256 version_, bytes calldata initializationArguments_, bytes32 salt_) external returns (address proxy_) {
         bool success;
-        (success, proxy) = _newInstanceWithSalt(version, initializationArguments, salt);
+        (success, proxy_) = _newInstanceWithSalt(version_, initializationArguments_, salt_);
         require(success);
     }
 
-    function registerMigrator(uint256 fromVersion, uint256 toVersion, address migrator) external {
-        require(_registerMigrator(fromVersion, toVersion, migrator));
+    function registerMigrator(uint256 fromVersion_, uint256 toVersion_, address migrator_) external {
+        require(_registerMigrator(fromVersion_, toVersion_, migrator_));
     }
 
-    function upgradeInstance(address proxy, uint256 toVersion, bytes calldata migrationArguments) external {
-        require(_upgradeInstance(proxy, toVersion, migrationArguments));
+    function upgradeInstance(address proxy_, uint256 toVersion_, bytes calldata migrationArguments_) external {
+        require(_upgradeInstance(proxy_, toVersion_, migrationArguments_));
     }
 
 }
@@ -54,8 +54,8 @@ contract MockInitializerV1 is SlotManipulatable {
 
     bytes32 private constant DELTA_SLOT = 0x1111111111111111111111111111111111111111111111111111111111111111;
 
-    function _setDeltaOf(uint256 key, uint256 newDelta) internal {
-        _setSlotValue(_getReferenceTypeSlot(DELTA_SLOT, bytes32(key)), bytes32(newDelta));
+    function _setDeltaOf(uint256 key_, uint256 delta_) internal {
+        _setSlotValue(_getReferenceTypeSlot(DELTA_SLOT, bytes32(key_)), bytes32(delta_));
     }
 
     fallback() external {
@@ -75,31 +75,31 @@ contract MockInitializerV1 is SlotManipulatable {
 
 interface IMockImplementationV1 is IProxied {
 
-    function alpha() external view returns (uint256);
-    
-    function beta() external view returns (uint256);
+    function alpha() external view returns (uint256 alpha_);
 
-    function charlie() external view returns (uint256);
+    function beta() external view returns (uint256 beta_);
 
-    function getLiteral() external pure returns (uint256);
+    function charlie() external view returns (uint256 charlie_);
 
-    function getConstant() external pure returns (uint256);
+    function getLiteral() external pure returns (uint256 literal_);
 
-    function getViewable() external view returns (uint256);
+    function getConstant() external pure returns (uint256 constant_);
 
-    function setBeta(uint256 newBeta) external;
+    function getViewable() external view returns (uint256 viewable_);
 
-    function setCharlie(uint256 newCharlie) external;
+    function setBeta(uint256 beta_) external;
 
-    function deltaOf(uint256 key) external view returns (uint256);
+    function setCharlie(uint256 charlie_) external;
 
-    function setDeltaOf(uint256 key, uint256 newDelta) external;
+    function deltaOf(uint256 key_) external view returns (uint256 delta_);
+
+    function setDeltaOf(uint256 key_, uint256 delta_) external;
 
     // Composability
 
-    function getAnotherBeta(address other) external view returns (uint256);
+    function getAnotherBeta(address other_) external view returns (uint256 beta_);
 
-    function setAnotherBeta(address other, uint256 newBeta) external;
+    function setAnotherBeta(address other_, uint256 beta_) external;
 
 }
 
@@ -116,42 +116,42 @@ contract MockImplementationV1 is IMockImplementationV1, Proxied {
     // NOTE: This is implemented manually in order to support upgradeability and migrations
     // mapping(uint256 => uint256) public override deltaOf;
 
-    function getLiteral() external pure override returns (uint256) {
+    function getLiteral() external pure override returns (uint256 literal_) {
         return 2222;
     }
 
-    function getConstant() external pure override returns (uint256) {
+    function getConstant() external pure override returns (uint256 constant_) {
         return alpha;
     }
 
-    function getViewable() external view override returns (uint256) {
+    function getViewable() external view override returns (uint256 viewable_) {
         return beta;
     }
 
-    function setBeta(uint256 newBeta) external override {
-        beta = newBeta;
+    function setBeta(uint256 beta_) external override {
+        beta = beta_;
     }
 
-    function setCharlie(uint256 newCharlie) external override {
-        charlie = newCharlie;
+    function setCharlie(uint256 charlie_) external override {
+        charlie = charlie_;
     }
 
-    function deltaOf(uint256 key) public view override returns (uint256) {
-        return uint256(_getSlotValue((_getReferenceTypeSlot(DELTA_SLOT, bytes32(key)))));
+    function deltaOf(uint256 key_) public view override returns (uint256 delta_) {
+        return uint256(_getSlotValue((_getReferenceTypeSlot(DELTA_SLOT, bytes32(key_)))));
     }
 
-    function setDeltaOf(uint256 key, uint256 newDelta) public override {
-        _setSlotValue(_getReferenceTypeSlot(DELTA_SLOT, bytes32(key)), bytes32(newDelta));
+    function setDeltaOf(uint256 key_, uint256 delta_) public override {
+        _setSlotValue(_getReferenceTypeSlot(DELTA_SLOT, bytes32(key_)), bytes32(delta_));
     }
 
     // Composability
 
-    function getAnotherBeta(address other) external view override returns (uint256) {
-        return IMockImplementationV1(other).beta();
+    function getAnotherBeta(address other_) external view override returns (uint256 beta_) {
+        return IMockImplementationV1(other_).beta();
     }
 
-    function setAnotherBeta(address other, uint256 newBeta) external override {
-        IMockImplementationV1(other).setBeta(newBeta);
+    function setAnotherBeta(address other_, uint256 beta_) external override {
+        IMockImplementationV1(other_).setBeta(beta_);
     }
 
 }
@@ -163,8 +163,8 @@ contract MockInitializerV2 is SlotManipulatable {
 
     bytes32 private constant DERBY_SLOT = 0x1111111111111111111111111111111111111111111111111111111111111111;
 
-    function _setDerbyOf(uint256 key, uint256 newDelta) internal {
-        _setSlotValue(_getReferenceTypeSlot(DERBY_SLOT, bytes32(key)), bytes32(newDelta));
+    function _setDerbyOf(uint256 key_, uint256 delta_) internal {
+        _setSlotValue(_getReferenceTypeSlot(DERBY_SLOT, bytes32(key_)), bytes32(delta_));
     }
 
     fallback() external {
@@ -186,25 +186,25 @@ contract MockInitializerV2 is SlotManipulatable {
 
 interface IMockImplementationV2 is IProxied {
 
-    function axiom() external view returns (uint256);
+    function axiom() external view returns (uint256 axiom_);
 
-    function charlie() external view returns (uint256);
+    function charlie() external view returns (uint256 charlie_);
 
-    function echo() external view returns (uint256);
+    function echo() external view returns (uint256 echo_);
 
-    function getLiteral() external pure returns (uint256);
+    function getLiteral() external pure returns (uint256 literal_);
 
-    function getConstant() external pure returns (uint256);
+    function getConstant() external pure returns (uint256 constant_);
 
-    function getViewable() external view returns (uint256);
+    function getViewable() external view returns (uint256 viewable_);
 
-    function setCharlie(uint256 newCharlie) external;
+    function setCharlie(uint256 charlie_) external;
 
-    function setEcho(uint256 newEcho) external;
+    function setEcho(uint256 echo_) external;
 
-    function derbyOf(uint256 key) external view returns (uint256);
+    function derbyOf(uint256 key_) external view returns (uint256 derby_);
 
-    function setDerbyOf(uint256 key, uint256 newDerby) external;
+    function setDerbyOf(uint256 key_, uint256 derby_) external;
 
 }
 
@@ -221,32 +221,32 @@ contract MockImplementationV2 is IMockImplementationV2, Proxied {
     // NOTE: This is implemented manually in order to support upgradeability and migrations
     // mapping(uint256 => uint256) public override derbyOf;
 
-    function getLiteral() external pure override returns (uint256) {
+    function getLiteral() external pure override returns (uint256 literal_) {
         return 4444;
     }
 
-    function getConstant() external pure override returns (uint256) {
+    function getConstant() external pure override returns (uint256 constant_) {
         return axiom;
     }
 
-    function getViewable() external view override returns (uint256) {
+    function getViewable() external view override returns (uint256 viewable_) {
         return echo;
     }
 
-    function setCharlie(uint256 newCharlie) external override {
-        charlie = newCharlie;
+    function setCharlie(uint256 charlie_) external override {
+        charlie = charlie_;
     }
 
-    function setEcho(uint256 newEcho) external override {
-        echo = newEcho;
-    }
-    
-    function derbyOf(uint256 key) public view override returns (uint256) {
-        return uint256(_getSlotValue(_getReferenceTypeSlot(DERBY_SLOT, bytes32(key))));
+    function setEcho(uint256 echo_) external override {
+        echo = echo_;
     }
 
-    function setDerbyOf(uint256 key, uint256 newDerby) public override {
-        _setSlotValue(_getReferenceTypeSlot(DERBY_SLOT, bytes32(key)), bytes32(newDerby));
+    function derbyOf(uint256 key_) public view override returns (uint256) {
+        return uint256(_getSlotValue(_getReferenceTypeSlot(DERBY_SLOT, bytes32(key_))));
+    }
+
+    function setDerbyOf(uint256 key_, uint256 derby_) public override {
+        _setSlotValue(_getReferenceTypeSlot(DERBY_SLOT, bytes32(key_)), bytes32(derby_));
     }
 
 }
@@ -254,16 +254,16 @@ contract MockImplementationV2 is IMockImplementationV2, Proxied {
 // Used to migrate V1 contracts to v2 (may contain initialization logic as well)
 contract MockMigratorV1ToV2 is SlotManipulatable {
 
-    event Migrated(uint256 newCharlie, uint256 echo, uint256 derby15, uint256 newDerby4);
+    event Migrated(uint256 charlie, uint256 echo, uint256 derby15, uint256 derby4);
 
     bytes32 private constant DERBY_SLOT = 0x1111111111111111111111111111111111111111111111111111111111111111;
 
-    function _setDerbyOf(uint256 key, uint256 newDelta) internal {
-        _setSlotValue(_getReferenceTypeSlot(DERBY_SLOT, bytes32(key)), bytes32(newDelta));
+    function _setDerbyOf(uint256 key_, uint256 delta_) internal {
+        _setSlotValue(_getReferenceTypeSlot(DERBY_SLOT, bytes32(key_)), bytes32(delta_));
     }
 
-    function _getDerbyOf(uint256 key) public view returns (uint256) {
-        return uint256(_getSlotValue(_getReferenceTypeSlot(DERBY_SLOT, bytes32(key))));
+    function _getDerbyOf(uint256 key_) public view returns (uint256 derby_) {
+        return uint256(_getSlotValue(_getReferenceTypeSlot(DERBY_SLOT, bytes32(key_))));
     }
 
     fallback() external {
@@ -301,16 +301,16 @@ contract MockMigratorV1ToV2 is SlotManipulatable {
 
 contract MockMigratorV1ToV2WithNoArgs is SlotManipulatable {
 
-    event Migrated(uint256 newCharlie, uint256 echo, uint256 newDerby4);
+    event Migrated(uint256 charlie, uint256 echo, uint256 derby4);
 
     bytes32 private constant DERBY_SLOT = 0x1111111111111111111111111111111111111111111111111111111111111111;
 
-    function _setDerbyOf(uint256 key, uint256 newDelta) internal {
-        _setSlotValue(_getReferenceTypeSlot(DERBY_SLOT, bytes32(key)), bytes32(newDelta));
+    function _setDerbyOf(uint256 key_, uint256 delta_) internal {
+        _setSlotValue(_getReferenceTypeSlot(DERBY_SLOT, bytes32(key_)), bytes32(delta_));
     }
 
-    function _getDerbyOf(uint256 key) public view returns (uint256) {
-        return uint256(_getSlotValue(_getReferenceTypeSlot(DERBY_SLOT, bytes32(key))));
+    function _getDerbyOf(uint256 key_) public view returns (uint256 derby_) {
+        return uint256(_getSlotValue(_getReferenceTypeSlot(DERBY_SLOT, bytes32(key_))));
     }
 
     fallback() external {

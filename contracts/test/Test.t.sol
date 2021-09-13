@@ -186,10 +186,10 @@ contract Test is DSTest {
         assertEq(IMockImplementationV1(proxy).implementation(),  address(implementationV1));
 
         assertEq(IMockImplementationV1(proxy).beta(),      7575);
-        assertEq(IMockImplementationV1(proxy).charlie(),   1414); 
-        assertEq(IMockImplementationV1(proxy).deltaOf(2),  3030); 
-        assertEq(IMockImplementationV1(proxy).deltaOf(4),  9944); 
-        assertEq(IMockImplementationV1(proxy).deltaOf(15), 2323); 
+        assertEq(IMockImplementationV1(proxy).charlie(),   1414);
+        assertEq(IMockImplementationV1(proxy).deltaOf(2),  3030);
+        assertEq(IMockImplementationV1(proxy).deltaOf(4),  9944);
+        assertEq(IMockImplementationV1(proxy).deltaOf(15), 2323);
 
         assertEq(IMockImplementationV1(proxy).getLiteral(),  2222);
         assertEq(IMockImplementationV1(proxy).getConstant(), 1111);
@@ -242,10 +242,10 @@ contract Test is DSTest {
         // Check state before migration.
         assertEq(IMockImplementationV1(proxy).implementation(),  address(implementationV1));
 
-        assertEq(IMockImplementationV1(proxy).beta(),      7575);  
-        assertEq(IMockImplementationV1(proxy).charlie(),   1414);  
-        assertEq(IMockImplementationV1(proxy).deltaOf(2),  3030);  
-        assertEq(IMockImplementationV1(proxy).deltaOf(4),  9944);  
+        assertEq(IMockImplementationV1(proxy).beta(),      7575);
+        assertEq(IMockImplementationV1(proxy).charlie(),   1414);
+        assertEq(IMockImplementationV1(proxy).deltaOf(2),  3030);
+        assertEq(IMockImplementationV1(proxy).deltaOf(4),  9944);
         assertEq(IMockImplementationV1(proxy).deltaOf(15), 2323);
 
         assertEq(IMockImplementationV1(proxy).getLiteral(),  2222);
@@ -301,11 +301,11 @@ contract Test is DSTest {
         // Check state before migration.
         assertEq(IMockImplementationV1(proxy).implementation(),  address(implementationV1));
 
-        assertEq(IMockImplementationV1(proxy).beta(),      7575); 
-        assertEq(IMockImplementationV1(proxy).charlie(),   1414); 
-        assertEq(IMockImplementationV1(proxy).deltaOf(2),  3030); 
-        assertEq(IMockImplementationV1(proxy).deltaOf(4),  9944); 
-        assertEq(IMockImplementationV1(proxy).deltaOf(15), 2323); 
+        assertEq(IMockImplementationV1(proxy).beta(),      7575);
+        assertEq(IMockImplementationV1(proxy).charlie(),   1414);
+        assertEq(IMockImplementationV1(proxy).deltaOf(2),  3030);
+        assertEq(IMockImplementationV1(proxy).deltaOf(4),  9944);
+        assertEq(IMockImplementationV1(proxy).deltaOf(15), 2323);
 
         assertEq(IMockImplementationV1(proxy).getLiteral(),  2222);
         assertEq(IMockImplementationV1(proxy).getConstant(), 1111);
@@ -321,7 +321,7 @@ contract Test is DSTest {
         assertEq(IMockImplementationV2(proxy).echo(),      3333);
         assertEq(IMockImplementationV2(proxy).derbyOf(2),  3030);  // Delta from V1 was renamed to Derby
         assertEq(IMockImplementationV2(proxy).derbyOf(4),  1188);  // Should be different due to migration case.
-        assertEq(IMockImplementationV2(proxy).derbyOf(15), 15); 
+        assertEq(IMockImplementationV2(proxy).derbyOf(15), 15);
 
         assertEq(IMockImplementationV2(proxy).getLiteral(),  4444);
         assertEq(IMockImplementationV2(proxy).getConstant(), 5555);
@@ -338,7 +338,7 @@ contract Test is DSTest {
 
         assertEq(proxy, 0x6FD86f82E0D16465c7c9898971A545B83d43a9e0);
     }
-     
+
     function testFail_newInstanceWithSalt() public {
         MockFactory          factory        = new MockFactory();
         MockImplementationV1 implementation = new MockImplementationV1();
