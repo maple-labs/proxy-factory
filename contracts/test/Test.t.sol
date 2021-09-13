@@ -350,8 +350,7 @@ contract Test is DSTest {
 
     function testFail_newInstance_nonRegisteredImplementation() public {
         MockFactory factory = new MockFactory();
-
-        address proxy = factory.newInstance(1, new bytes(0));
+        factory.newInstance(1, new bytes(0));
     }
 
     function testFail_upgrade_nonRegisteredImplementation() public {
