@@ -14,12 +14,13 @@ contract Proxied is IProxied, SlotManipulatable {
     /// @dev Storage slot with the address of the current factory. This is the keccak-256 hash of "IMPLEMENTATION_SLOT".
     bytes32 private constant IMPLEMENTATION_SLOT = 0xf603533e14e17222e047634a2b3457fe346d27e294cedf9d21d74e5feea4a046;
 
-    function factory() public view override returns (address factory_) {
-        return address(uint160(uint256(_getSlotValue(FACTORY_SLOT))));
-    }
+    /********************************/
+    /*** State-Changing Functions ***/
+    /********************************/
 
-    function implementation() public view override returns (address implementation_) {
-        return address(uint160(uint256(_getSlotValue(IMPLEMENTATION_SLOT))));
+    function migrate(address migrator_, bytes calldata arguments_) external override {
+        require(msg.sender == factory(),         "P:M:NOT_FACTORY");
+        require(_migrate(migrator_, arguments_), "P:M:MIGRATION_FAILED");
     }
 
     function setImplementation(address newImplementation_) external virtual override {
@@ -27,17 +28,28 @@ contract Proxied is IProxied, SlotManipulatable {
         _setImplementation(newImplementation_);
     }
 
+    /**************************/
+    /*** Internal Functions ***/
+    /**************************/
+
+    function _migrate(address migrator_, bytes calldata arguments_) internal virtual returns (bool success_) {
+        ( success_, ) = migrator_.delegatecall(arguments_);
+    }
+
     function _setImplementation(address newImplementation_) internal virtual {
         _setSlotValue(IMPLEMENTATION_SLOT, bytes32(uint256(uint160(newImplementation_))));
     }
 
-    function migrate(address migrator_, bytes calldata arguments_) external  override {
-        require(msg.sender == factory(),         "P:M:NOT_FACTORY");
-        require(_migrate(migrator_, arguments_), "P:M:MIGRATION_FAILED");
+    /************************/
+    /*** Getter Functions ***/
+    /************************/
+
+    function factory() public view override returns (address factory_) {
+        return address(uint160(uint256(_getSlotValue(FACTORY_SLOT))));
     }
 
-    function _migrate(address migrator_, bytes calldata arguments_) internal virtual returns (bool success_) {
-        (success_,) = migrator_.delegatecall(arguments_);
+    function implementation() public view override returns (address implementation_) {
+        return address(uint160(uint256(_getSlotValue(IMPLEMENTATION_SLOT))));
     }
 
 }
