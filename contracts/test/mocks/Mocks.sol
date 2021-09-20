@@ -7,6 +7,28 @@ import { Proxied }           from "../../Proxied.sol";
 import { ProxyFactory }      from "../../ProxyFactory.sol";
 import { SlotManipulatable } from "../../SlotManipulatable.sol";
 
+contract MockProxied is IProxied, Proxied {
+
+    function migrate(address migrator_, bytes calldata arguments_) external override {
+        require(msg.sender == _factory(),        "P:M:NOT_FACTORY");
+        require(_migrate(migrator_, arguments_), "P:M:MIGRATION_FAILED");
+    }
+
+    function setImplementation(address newImplementation_) external override {
+        require(msg.sender == _factory(), "P:U:NOT_FACTORY");
+        _setImplementation(newImplementation_);
+    }
+
+    function factory() public view override returns (address factory_) {
+        return _factory();
+    }
+
+    function implementation() public view override returns (address implementation_) {
+        return _implementation();
+    }
+
+}
+
 contract MockFactory is ProxyFactory {
 
     function implementation(uint256 version_) external view returns (address implementation_) {
@@ -103,7 +125,7 @@ interface IMockImplementationV1 is IProxied {
 
 }
 
-contract MockImplementationV1 is IMockImplementationV1, Proxied {
+contract MockImplementationV1 is IMockImplementationV1, MockProxied {
 
     // Some "Nothing Up My Sleeve" Slot
     bytes32 private constant DELTA_SLOT = 0x1111111111111111111111111111111111111111111111111111111111111111;
@@ -208,7 +230,7 @@ interface IMockImplementationV2 is IProxied {
 
 }
 
-contract MockImplementationV2 is IMockImplementationV2, Proxied {
+contract MockImplementationV2 is IMockImplementationV2, MockProxied {
 
     // Same "Nothing Up My Sleeve" Slot as in V1
     bytes32 private constant DERBY_SLOT = 0x1111111111111111111111111111111111111111111111111111111111111111;
