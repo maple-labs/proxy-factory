@@ -4,16 +4,27 @@ pragma solidity ^0.8.7;
 /// @title A proxied implementation must be Proxied.
 interface IProxied {
 
-    /// @notice Returns the address of the proxy factory.
+    /**
+     *  @notice The address of the proxy factory.
+     */
     function factory() external view returns (address factory_);
 
-    /// @notice Returns the address of the implementation contract.
+    /**
+     *  @notice The address of the implementation contract being proxied.
+     */
     function implementation() external view returns (address implementation_);
 
-    /// @notice Modifies the proxy's implementation address.
+    /**
+     *  @notice Modifies the proxy's implementation address.
+     *  @param  newImplementation_ The address of an implementation contract.
+     */
     function setImplementation(address newImplementation_) external;
 
-    /// @notice Modifies the proxy's storage by delegate-calling a migrator contract with some arguments.
+    /**
+     *  @notice Modifies the proxy's storage by delegate-calling a migrator contract with some arguments.
+     *  @param  migrator_  The address of a migrator contract.
+     *  @param  arguments_ Some encoded arguments to use for the migration.
+     */
     function migrate(address migrator_, bytes calldata arguments_) external;
 
 }

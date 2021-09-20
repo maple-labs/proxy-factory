@@ -12,7 +12,7 @@ contract Proxy is SlotManipulatable {
     bytes32 private constant IMPLEMENTATION_SLOT = 0xf603533e14e17222e047634a2b3457fe346d27e294cedf9d21d74e5feea4a046;
 
     function _setup() private {
-        (address factory, address implementation) = abi.decode(msg.data, (address, address));
+        ( address factory, address implementation ) = abi.decode(msg.data, (address, address));
         _setSlotValue(FACTORY_SLOT,        bytes32(uint256(uint160(factory))));
         _setSlotValue(IMPLEMENTATION_SLOT, bytes32(uint256(uint160(implementation))));
     }

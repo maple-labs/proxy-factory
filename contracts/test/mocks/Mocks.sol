@@ -27,13 +27,13 @@ contract MockFactory is ProxyFactory {
 
     function newInstance(uint256 version_, bytes calldata initializationArguments_) external returns (address proxy_) {
         bool success;
-        (success, proxy_) = _newInstance(version_, initializationArguments_);
+        ( success, proxy_ ) = _newInstance(version_, initializationArguments_);
         require(success);
     }
 
     function newInstanceWithSalt(uint256 version_, bytes calldata initializationArguments_, bytes32 salt_) external returns (address proxy_) {
         bool success;
-        (success, proxy_) = _newInstanceWithSalt(version_, initializationArguments_, salt_);
+        ( success, proxy_ ) = _newInstanceWithSalt(version_, initializationArguments_, salt_);
         require(success);
     }
 
