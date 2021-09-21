@@ -157,13 +157,13 @@ contract MockImplementationV1 is IProxied, Proxied, IMockImplementationV1 {
     // Proxied
 
     function migrate(address migrator_, bytes calldata arguments_) external override {
-        require(msg.sender == _factory(),        "P:M:NOT_FACTORY");
-        require(_migrate(migrator_, arguments_), "P:M:MIGRATION_FAILED");
+        require(msg.sender == _factory(),        "MI:M:NOT_FACTORY");
+        require(_migrate(migrator_, arguments_), "MI:M:FAILED");
     }
 
     function setImplementation(address newImplementation_) external override {
-        require(msg.sender == _factory(), "P:U:NOT_FACTORY");
-        _setImplementation(newImplementation_);
+        require(msg.sender == _factory(),               "MI:SI:NOT_FACTORY");
+        require(_setImplementation(newImplementation_), "MI:SI:FAILED");
     }
 
     function factory() public view override returns (address factory_) {
@@ -272,13 +272,13 @@ contract MockImplementationV2 is IProxied, Proxied, IMockImplementationV2 {
     // Proxied
 
     function migrate(address migrator_, bytes calldata arguments_) external override {
-        require(msg.sender == _factory(),        "P:M:NOT_FACTORY");
-        require(_migrate(migrator_, arguments_), "P:M:MIGRATION_FAILED");
+        require(msg.sender == _factory(),        "MI:M:NOT_FACTORY");
+        require(_migrate(migrator_, arguments_), "MI:M:FAILED");
     }
 
     function setImplementation(address newImplementation_) external override {
-        require(msg.sender == _factory(), "P:U:NOT_FACTORY");
-        _setImplementation(newImplementation_);
+        require(msg.sender == _factory(),               "MI:SI:NOT_FACTORY");
+        require(_setImplementation(newImplementation_), "MI:SI:FAILED");
     }
 
     function factory() public view override returns (address factory_) {
