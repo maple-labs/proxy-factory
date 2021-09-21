@@ -22,6 +22,7 @@ interface IProxied {
 
     /**
      *  @notice Modifies the proxy's storage by delegate-calling a migrator contract with some arguments.
+     *  @dev    Access control logic critical since caller can force a selfdestruct via a malicious `migrator_` which is delegatecalled.
      *  @param  migrator_  The address of a migrator contract.
      *  @param  arguments_ Some encoded arguments to use for the migration.
      */
