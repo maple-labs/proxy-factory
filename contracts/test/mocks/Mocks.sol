@@ -13,6 +13,14 @@ contract MockFactory is ProxyFactory {
         return _implementationOf[version_];
     }
 
+    function getCodeHash(address proxy_) external view returns (bytes32 codeHash_) {
+        return _getCodeHash(proxy_);
+    }
+
+    function isInstance(address proxy_) external view returns (bool isInstance_) {
+        return _isInstance(proxy_);
+    }
+
     function migratorForPath(uint256 fromVersion_, uint256 toVersion_) external view returns (address migrator_) {
         return _migratorForPath[fromVersion_][toVersion_];
     }
@@ -380,6 +388,40 @@ contract MockMigratorV1ToV2WithNoArgs is SlotManipulatable {
         }
 
         emit Migrated(newCharlie, 3333, newDerby4);
+    }
+
+}
+
+contract ProxyWithIncorrectCode {
+
+    address public factory;
+    address public implementation;
+    
+    constructor(address factory_, address implementation_) {
+        factory        = factory_;
+        implementation = implementation_;
+    }
+
+}
+
+contract InvalidImplementation is IProxied, Proxied {
+
+    function migrate(address migrator_, bytes calldata arguments_) external override {
+        require(msg.sender == _factory(),        "II:M:NOT_FACTORY");
+        require(_migrate(migrator_, arguments_), "II:M:FAILED");
+    }
+
+    function setImplementation(address newImplementation_) external override {
+        require(msg.sender == _factory(),               "II:SI:NOT_FACTORY");
+        require(_setImplementation(newImplementation_), "II:SI:FAILED");
+    }
+
+    function factory() public view override returns (address factory_) {
+        return _factory();
+    }
+
+    function implementation() public view override returns (address implementation_) {
+        return _implementation();
     }
 
 }

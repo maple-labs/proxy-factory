@@ -7,6 +7,8 @@ import { Proxy } from "./Proxy.sol";
 
 contract ProxyFactory {
 
+    bytes32 internal constant PROXY_CODE_HASH = keccak256(type(Proxy).runtimeCode);
+
     mapping(uint256 => address) internal _implementationOf;
 
     mapping(address => uint256) internal _versionOf;
@@ -19,6 +21,10 @@ contract ProxyFactory {
         assembly {
             proxy_ := create2(0, add(creationCode, 32), mload(creationCode), salt_)
         }
+    }
+
+    function _getCodeHash(address account_) internal view returns (bytes32 codeHash_) {
+        assembly { codeHash_ := extcodehash(account_) }
     }
 
     function _initializeInstance(
@@ -40,6 +46,16 @@ contract ProxyFactory {
         if (initializer == address(0)) return true;
 
         ( success_, ) = proxy_.call(abi.encodeWithSelector(IProxied.migrate.selector, initializer, arguments_));
+    }
+
+    function _isInstance(address proxy_) internal view virtual returns (bool isInstance_) {
+        address implementation = IProxied(proxy_).implementation();
+
+        // Check that proxy has expected code, its factory is this contract, and its implementation is registered.
+        return
+            _getCodeHash(proxy_) == PROXY_CODE_HASH &&
+            IProxied(proxy_).factory() == address(this) &&
+            _implementationOf[_versionOf[implementation]] == implementation;
     }
 
     function _newInstance(uint256 version_, bytes memory arguments_) internal virtual returns (bool success_, address proxy_) {
