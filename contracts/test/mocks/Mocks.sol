@@ -398,22 +398,22 @@ contract ProxyWithIncorrectCode {
     address public implementation;
     
     constructor(address factory_, address implementation_) {
-        factory = factory_;
+        factory        = factory_;
         implementation = implementation_;
     }
 
 }
 
-contract InvalidIMplementation is IProxied, Proxied {
+contract InvalidImplementation is IProxied, Proxied {
 
     function migrate(address migrator_, bytes calldata arguments_) external override {
-        require(msg.sender == _factory(),        "MI:M:NOT_FACTORY");
-        require(_migrate(migrator_, arguments_), "MI:M:FAILED");
+        require(msg.sender == _factory(),        "II:M:NOT_FACTORY");
+        require(_migrate(migrator_, arguments_), "II:M:FAILED");
     }
 
     function setImplementation(address newImplementation_) external override {
-        require(msg.sender == _factory(),               "MI:SI:NOT_FACTORY");
-        require(_setImplementation(newImplementation_), "MI:SI:FAILED");
+        require(msg.sender == _factory(),               "II:SI:NOT_FACTORY");
+        require(_setImplementation(newImplementation_), "II:SI:FAILED");
     }
 
     function factory() public view override returns (address factory_) {

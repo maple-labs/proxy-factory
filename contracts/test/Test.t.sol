@@ -8,7 +8,7 @@ import { Proxy } from "../Proxy.sol";
 import {
     IMockImplementationV1,
     IMockImplementationV2,
-    InvalidIMplementation,
+    InvalidImplementation,
     MockFactory,
     MockImplementationV1,
     MockImplementationV2,
@@ -394,13 +394,10 @@ contract Test is DSTest {
 
         factory.registerImplementation(1, address(implementation));
 
-        // Confirm a valid proxy, which was deployed by the factory, is a recognized instance.
-        assertTrue(factory.isInstance(address(IMockImplementationV1(factory.newInstance(1, new bytes(0))))));
+        // Confirm a proxy, which was deployed by the factory, and thus has valid proxy code, factory, and implementation, is a recognized instance.
+        assertTrue(factory.isInstance(factory.newInstance(1, new bytes(0))));
 
-        // Confirm a proxy with different code is not a recognized instance.
-        assertTrue(!factory.isInstance(address(new ProxyWithIncorrectCode(address(factory), address(implementation)))));
-
-        // Confirm a valid proxy, which was not deployed by the factory, but has valid code, factory, and implementation, is a recognized instance.
+        // Confirm a proxy, which was not deployed by the factory, but has valid proxy code, factory, and implementation, is a recognized instance.
         address manuallyCreatedProxy = address(new Proxy());
 
         bool success;
@@ -409,7 +406,10 @@ contract Test is DSTest {
 
         assertTrue(factory.isInstance(manuallyCreatedProxy));
 
-        // Confirm an invalid proxy, which has valid code and implementation, but invalid factory, is not a recognized instance.
+        // Confirm a proxy, which has a valid factory and implementation, but invalid proxy code, is not a recognized instance.
+        assertTrue(!factory.isInstance(address(new ProxyWithIncorrectCode(address(factory), address(implementation)))));
+
+        // Confirm a proxy, which has valid proxy code and implementation, but invalid factory, is not a recognized instance.
         address proxyWithIncorrectFactory = address(new Proxy());
 
         ( success, ) = proxyWithIncorrectFactory.call(abi.encode(address(9876), address(implementation)));
@@ -417,10 +417,10 @@ contract Test is DSTest {
 
         assertTrue(!factory.isInstance(proxyWithIncorrectFactory));
 
-        // Confirm an invalid proxy, which has valid code and factory, but invalid implementation, is not a recognized instance.
+        // Confirm a proxy, which has valid proxy code and factory, but invalid implementation, is not a recognized instance.
         address proxyWithIncorrectImplementation = address(new Proxy());
 
-        ( success, ) = proxyWithIncorrectImplementation.call(abi.encode(address(factory), address(new InvalidIMplementation())));
+        ( success, ) = proxyWithIncorrectImplementation.call(abi.encode(address(factory), address(new InvalidImplementation())));
         require(success);
 
         assertTrue(!factory.isInstance(proxyWithIncorrectImplementation));
