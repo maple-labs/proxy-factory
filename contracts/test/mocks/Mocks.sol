@@ -276,7 +276,7 @@ contract MockImplementationV2 is IProxied, Proxied, IMockImplementationV2 {
     function setDerbyOf(uint256 key_, uint256 derby_) public override {
         _setSlotValue(_getReferenceTypeSlot(DERBY_SLOT, bytes32(key_)), bytes32(derby_));
     }
-    
+
     // Proxied
 
     function migrate(address migrator_, bytes calldata arguments_) external override {
@@ -396,7 +396,7 @@ contract ProxyWithIncorrectCode {
 
     address public factory;
     address public implementation;
-    
+
     constructor(address factory_, address implementation_) {
         factory        = factory_;
         implementation = implementation_;

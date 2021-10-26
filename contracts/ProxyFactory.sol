@@ -5,6 +5,7 @@ import { IProxied } from "./interfaces/IProxied.sol";
 
 import { Proxy } from "./Proxy.sol";
 
+/// @title A factory for Proxy contracts that proxy Proxied implementations.
 contract ProxyFactory {
 
     bytes32 internal constant PROXY_CODE_HASH = keccak256(type(Proxy).runtimeCode);
