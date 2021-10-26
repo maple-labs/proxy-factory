@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-/// @title A proxied implementation must be Proxied.
+/// @title An implementation that is to be proxied, must implement IProxied.
 interface IProxied {
 
     /**

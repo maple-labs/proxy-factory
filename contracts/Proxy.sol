@@ -3,13 +3,14 @@ pragma solidity ^0.8.7;
 
 import { SlotManipulatable } from "./SlotManipulatable.sol";
 
+/// @title A completely transparent, and thus interface-less, proxy contract.
 contract Proxy is SlotManipulatable {
 
-    /// @dev Storage slot with the address of the current factory. This is the keccak-256 hash of "FACTORY_SLOT".
-    bytes32 private constant FACTORY_SLOT = 0xf2db84db8157f5a01a257d644038e8929d5a62c9ffa8b736374913908897e5bb;
+    /// @dev Storage slot with the address of the current factory. `keccak256('eip1967.proxy.factory') - 1`.
+    bytes32 private constant FACTORY_SLOT = 0x7a45a402e4cb6e08ebc196f20f66d5d30e67285a2a8aa80503fa409e727a4af1;
 
-    /// @dev Storage slot with the address of the current implementation. This is the keccak-256 hash of "IMPLEMENTATION_SLOT".
-    bytes32 private constant IMPLEMENTATION_SLOT = 0xf603533e14e17222e047634a2b3457fe346d27e294cedf9d21d74e5feea4a046;
+    /// @dev Storage slot with the address of the current factory. `keccak256('eip1967.proxy.implementation') - 1`.
+    bytes32 private constant IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;
 
     function _setup() private {
         ( address factory, address implementation ) = abi.decode(msg.data, (address, address));
