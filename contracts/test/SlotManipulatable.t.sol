@@ -7,7 +7,7 @@ import { SlotManipulatable }  from "../SlotManipulatable.sol";
 
 contract StorageContract is SlotManipulatable {
 
-    bytes32 private constant REFERENCE_SLOT = 0x1111111111111111111111111111111111111111111111111111111111111111;
+    bytes32 private constant REFERENCE_SLOT = bytes32(0x1111111111111111111111111111111111111111111111111111111111111111);
 
     function setSlotValue(bytes32 slot_, bytes32 value_) external {
         _setSlotValue(slot_, value_);
