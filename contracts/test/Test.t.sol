@@ -8,7 +8,6 @@ import { Proxy } from "../Proxy.sol";
 import {
     IMockImplementationV1,
     IMockImplementationV2,
-    InvalidImplementation,
     MockFactory,
     MockImplementationV1,
     MockImplementationV2,
@@ -35,8 +34,6 @@ contract Test is DSTest {
 
         assertEq(proxy.factory(),        address(factory));
         assertEq(proxy.implementation(), address(implementation));
-
-        assertTrue(factory.isInstance(address(proxy)));
 
         assertEq(proxy.alpha(),    1111);
         assertEq(proxy.beta(),     0);
@@ -74,8 +71,6 @@ contract Test is DSTest {
 
         assertEq(proxy.factory(),        address(factory));
         assertEq(proxy.implementation(), address(implementation));
-
-        assertTrue(factory.isInstance(address(proxy)));
 
         assertEq(proxy.alpha(),    1111);
         assertEq(proxy.beta(),     1313);
@@ -115,8 +110,6 @@ contract Test is DSTest {
         assertEq(proxy.factory(),        address(factory));
         assertEq(proxy.implementation(), address(implementation));
 
-        assertTrue(factory.isInstance(address(proxy)));
-
         assertEq(proxy.axiom(),    5555);
         assertEq(proxy.charlie(),  3434);
         assertEq(proxy.echo(),     3333);
@@ -146,9 +139,6 @@ contract Test is DSTest {
 
         IMockImplementationV1 proxy1 = IMockImplementationV1(factory.newInstance(1, new bytes(0)));
         address proxy2               = factory.newInstance(1, new bytes(0));
-
-        assertTrue(factory.isInstance(address(proxy1)));
-        assertTrue(factory.isInstance(address(proxy2)));
 
         // Change proxy2 values.
         IMockImplementationV1(proxy2).setBeta(5959);
@@ -214,8 +204,6 @@ contract Test is DSTest {
         // Check if migration was successful.
         assertEq(IMockImplementationV2(proxy).implementation(),  address(implementationV2));
 
-        assertTrue(factory.isInstance(address(proxy)));
-
         assertEq(IMockImplementationV2(proxy).charlie(),   7575);  // Is old beta.
         assertEq(IMockImplementationV2(proxy).echo(),      1414);  // Is old charlie.
         assertEq(IMockImplementationV2(proxy).derbyOf(2),  3030);  // Delta was renamed to Derby, but the values remain unchanged.
@@ -275,8 +263,6 @@ contract Test is DSTest {
         // Check if migration was successful.
         assertEq(IMockImplementationV2(proxy).implementation(),  address(implementationV2));
 
-        assertTrue(factory.isInstance(address(proxy)));
-
         assertEq(IMockImplementationV2(proxy).charlie(),   2828);              // Should be doubled from V1.
         assertEq(IMockImplementationV2(proxy).echo(),      3333);
         assertEq(IMockImplementationV2(proxy).derbyOf(2),  3030);              // Delta from V1 was renamed to Derby
@@ -334,8 +320,6 @@ contract Test is DSTest {
         // Check if migration was successful.
         assertEq(IMockImplementationV2(proxy).implementation(),  address(implementationV2));
 
-        assertTrue(factory.isInstance(address(proxy)));
-
         assertEq(IMockImplementationV2(proxy).charlie(),   2828);  // Should be doubled from V1.
         assertEq(IMockImplementationV2(proxy).echo(),      3333);
         assertEq(IMockImplementationV2(proxy).derbyOf(2),  3030);  // Delta from V1 was renamed to Derby
@@ -356,8 +340,6 @@ contract Test is DSTest {
         address proxy = factory.newInstanceWithSalt(1, new bytes(0), "salt");
 
         assertEq(proxy, 0xaCb2535d37F00dFB214cBd5F83391795Ae5a9146);
-
-        assertTrue(factory.isInstance(proxy));
     }
 
     function testFail_newInstanceWithSalt() external {
@@ -386,44 +368,6 @@ contract Test is DSTest {
 
         // Migrate proxy from V1 to V2.
         factory.upgradeInstance(proxy, 2, new bytes(0));
-    }
-
-    function test_isInstance() external {
-        MockFactory          factory        = new MockFactory();
-        MockImplementationV1 implementation = new MockImplementationV1();
-
-        factory.registerImplementation(1, address(implementation));
-
-        // Confirm a proxy, which was deployed by the factory, and thus has valid proxy code, factory, and implementation, is a recognized instance.
-        assertTrue(factory.isInstance(factory.newInstance(1, new bytes(0))));
-
-        // Confirm a proxy, which was not deployed by the factory, but has valid proxy code, factory, and implementation, is a recognized instance.
-        address manuallyCreatedProxy = address(new Proxy());
-
-        bool success;
-        ( success, ) = manuallyCreatedProxy.call(abi.encode(address(factory), address(implementation)));
-        require(success);
-
-        assertTrue(factory.isInstance(manuallyCreatedProxy));
-
-        // Confirm a proxy, which has a valid factory and implementation, but invalid proxy code, is not a recognized instance.
-        assertTrue(!factory.isInstance(address(new ProxyWithIncorrectCode(address(factory), address(implementation)))));
-
-        // Confirm a proxy, which has valid proxy code and implementation, but invalid factory, is not a recognized instance.
-        address proxyWithIncorrectFactory = address(new Proxy());
-
-        ( success, ) = proxyWithIncorrectFactory.call(abi.encode(address(9876), address(implementation)));
-        require(success);
-
-        assertTrue(!factory.isInstance(proxyWithIncorrectFactory));
-
-        // Confirm a proxy, which has valid proxy code and factory, but invalid implementation, is not a recognized instance.
-        address proxyWithIncorrectImplementation = address(new Proxy());
-
-        ( success, ) = proxyWithIncorrectImplementation.call(abi.encode(address(factory), address(new InvalidImplementation())));
-        require(success);
-
-        assertTrue(!factory.isInstance(proxyWithIncorrectImplementation));
     }
 
 }
