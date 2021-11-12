@@ -12,16 +12,13 @@ contract Proxy is SlotManipulatable {
     /// @dev Storage slot with the address of the current factory. `keccak256('eip1967.proxy.implementation') - 1`.
     bytes32 private constant IMPLEMENTATION_SLOT = bytes32(0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc);
 
-    function _setup() private {
-        ( address factory, address implementation ) = abi.decode(msg.data, (address, address));
-        _setSlotValue(FACTORY_SLOT,        bytes32(uint256(uint160(factory))));
-        _setSlotValue(IMPLEMENTATION_SLOT, bytes32(uint256(uint160(implementation))));
+    constructor(address factory_, address implementation_) {
+        _setSlotValue(FACTORY_SLOT,        bytes32(uint256(uint160(factory_))));
+        _setSlotValue(IMPLEMENTATION_SLOT, bytes32(uint256(uint160(implementation_))));
     }
 
     function _fallback() private {
         bytes32 implementation = _getSlotValue(IMPLEMENTATION_SLOT);
-
-        if (implementation == bytes32(0)) return _setup();
 
         assembly {
             calldatacopy(0, 0, calldatasize())

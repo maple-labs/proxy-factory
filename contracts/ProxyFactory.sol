@@ -16,28 +16,7 @@ contract ProxyFactory {
 
     mapping(uint256 => mapping(uint256 => address)) internal _migratorForPath;
 
-    function _createPredeterminateInstance(bytes32 salt_) internal returns (address proxy_) {
-        bytes memory creationCode = type(Proxy).creationCode;
-
-        assembly {
-            proxy_ := create2(0, add(creationCode, 32), mload(creationCode), salt_)
-        }
-    }
-
-    function _initializeInstance(
-        address proxy_,
-        uint256 version_,
-        address implementation_,
-        bytes memory arguments_
-    ) internal virtual returns (bool success_) {
-        if (proxy_ == address(0)) return false;
-
-        if (implementation_ == address(0)) return false;
-
-        ( success_, ) = proxy_.call(abi.encode(address(this), implementation_));
-
-        if (!success_) return false;
-
+    function _initializeInstance(address proxy_, uint256 version_, bytes memory arguments_) internal virtual returns (bool success_) {
         address initializer = _migratorForPath[version_][version_];
 
         if (initializer == address(0)) return true;
@@ -46,11 +25,19 @@ contract ProxyFactory {
     }
 
     function _newInstance(uint256 version_, bytes memory arguments_) internal virtual returns (bool success_, address proxy_) {
-        success_ = _initializeInstance(proxy_ = address(new Proxy()), version_, _implementationOf[version_], arguments_);
+        address implementation = _implementationOf[version_];
+
+        success_ =
+            implementation != address(0) &&
+            _initializeInstance(proxy_ = address(new Proxy(address(this), implementation)), version_, arguments_);
     }
 
     function _newInstanceWithSalt(uint256 version_, bytes memory arguments_, bytes32 salt_) internal virtual returns (bool success_, address proxy_) {
-        success_ = _initializeInstance(proxy_ = _createPredeterminateInstance(salt_), version_, _implementationOf[version_], arguments_);
+        address implementation = _implementationOf[version_];
+
+        success_ =
+            implementation != address(0) &&
+            _initializeInstance(proxy_ = address(new Proxy{ salt: salt_ }(address(this), implementation)), version_, arguments_);
     }
 
     function _registerImplementation(uint256 version_, address implementationAddress_) internal virtual returns (bool success_) {
