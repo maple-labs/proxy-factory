@@ -67,6 +67,8 @@ contract ProxyFactory {
 
         if (!success_) return false;
 
+        // TODO: check proxy implementation and factory.
+
         if (migrator == address(0)) return true;
 
         ( success_, ) = proxy_.call(abi.encodeWithSelector(IProxied.migrate.selector, migrator, arguments_));

@@ -31,7 +31,7 @@ contract StorageContract is SlotManipulatable {
 
 }
 
-contract SlotManipulatableTest is DSTest {
+contract SlotManipulatableTests is DSTest {
 
     StorageContract storageContract;
 
