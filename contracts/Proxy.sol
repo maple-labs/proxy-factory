@@ -12,12 +12,14 @@ contract Proxy is SlotManipulatable {
     /// @dev Storage slot with the address of the current factory. `keccak256('eip1967.proxy.implementation') - 1`.
     bytes32 private constant IMPLEMENTATION_SLOT = bytes32(0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc);
 
+    // TODO: Perhaps fallback to a beacon if IMPLEMENTATION_SLOT is empty?
+    // TODO: Perhaps FACTORY_SLOT is (renamed to) BEACON_SLOT?
     constructor(address factory_, address implementation_) {
         _setSlotValue(FACTORY_SLOT,        bytes32(uint256(uint160(factory_))));
         _setSlotValue(IMPLEMENTATION_SLOT, bytes32(uint256(uint160(implementation_))));
     }
 
-    function _fallback() private {
+    fallback() payable external virtual {
         bytes32 implementation = _getSlotValue(IMPLEMENTATION_SLOT);
 
         assembly {
@@ -35,10 +37,6 @@ contract Proxy is SlotManipulatable {
                 return(0, returndatasize())
             }
         }
-    }
-
-    fallback() payable external virtual {
-        _fallback();
     }
 
 }

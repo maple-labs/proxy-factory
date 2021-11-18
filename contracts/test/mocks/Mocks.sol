@@ -45,6 +45,10 @@ contract MockFactory is ProxyFactory {
         require(_upgradeInstance(proxy_, toVersion_, migrationArguments_));
     }
 
+    function getDeterministicProxyAddress(address implementation_, bytes32 salt_) external view returns (address proxyAddress_) {
+        return _getDeterministicProxyAddress(implementation_, salt_);
+    }
+
 }
 
 // Used to initialize V1 contracts ("constructor")

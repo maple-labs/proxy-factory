@@ -67,9 +67,29 @@ contract ProxyFactory {
 
         if (!success_) return false;
 
+        // TODO: check proxy implementation and factory.
+
         if (migrator == address(0)) return true;
 
         ( success_, ) = proxy_.call(abi.encodeWithSelector(IProxied.migrate.selector, migrator, arguments_));
+    }
+
+    function _getDeterministicProxyAddress(address implementation_, bytes32 salt_) internal virtual view returns (address proxyAddress_) {
+        // See https://docs.soliditylang.org/en/v0.8.7/control-structures.html#salted-contract-creations-create2
+        return address(
+            uint160(
+                uint(
+                    keccak256(
+                        abi.encodePacked(
+                            bytes1(0xff),
+                            address(this),
+                            salt_,
+                            keccak256(abi.encodePacked(type(Proxy).creationCode, abi.encode(address(this), implementation_)))
+                        )
+                    )
+                )
+            )
+        );
     }
 
 }
