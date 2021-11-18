@@ -32,12 +32,12 @@ contract ProxyFactory {
             _initializeInstance(proxy_ = address(new Proxy(address(this), implementation)), version_, arguments_);
     }
 
-    function _newInstanceWithSalt(uint256 version_, bytes memory arguments_, bytes32 salt_) internal virtual returns (bool success_, address proxy_) {
+    function _newInstance(uint256 version_, bytes memory arguments_, bytes32 salt_) internal virtual returns (bool success_, address proxy_) {
         address implementation = _implementationOf[version_];
 
-        success_ =
-            implementation != address(0) &&
-            _initializeInstance(proxy_ = address(new Proxy{ salt: salt_ }(address(this), implementation)), version_, arguments_);
+        IProxied(proxy_ = address(new Proxy{ salt: salt_ }(address(this), address(0)))).setImplementation(implementation);
+
+        success_ = implementation != address(0) && _initializeInstance(proxy_, version_, arguments_);
     }
 
     function _registerImplementation(uint256 version_, address implementationAddress_) internal virtual returns (bool success_) {
@@ -74,7 +74,7 @@ contract ProxyFactory {
         ( success_, ) = proxy_.call(abi.encodeWithSelector(IProxied.migrate.selector, migrator, arguments_));
     }
 
-    function _getDeterministicProxyAddress(address implementation_, bytes32 salt_) internal virtual view returns (address proxyAddress_) {
+    function _getDeterministicProxyAddress(bytes32 salt_) internal virtual view returns (address proxyAddress_) {
         // See https://docs.soliditylang.org/en/v0.8.7/control-structures.html#salted-contract-creations-create2
         return address(
             uint160(
@@ -84,7 +84,7 @@ contract ProxyFactory {
                             bytes1(0xff),
                             address(this),
                             salt_,
-                            keccak256(abi.encodePacked(type(Proxy).creationCode, abi.encode(address(this), implementation_)))
+                            keccak256(abi.encodePacked(type(Proxy).creationCode, abi.encode(address(this), address(0))))
                         )
                     )
                 )

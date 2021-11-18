@@ -144,7 +144,7 @@ contract ProxyFactoryTests is DSTest {
 
     // TODO: testFail_newInstance_invalidArguments?
 
-    function test_newInstanceWithSalt() external {
+    function test_newInstance_withSaltAndNoInitialization() external {
         MockFactory          factory        = new MockFactory();
         MockImplementationV1 implementation = new MockImplementationV1();
 
@@ -152,19 +152,19 @@ contract ProxyFactoryTests is DSTest {
 
         bytes32 salt = keccak256(abi.encodePacked("salt"));
 
-        assertEq(factory.getDeterministicProxyAddress(address(implementation), salt), 0x5dB7F4612d8c6909610808413505A2c45061c8CB);
-        assertEq(factory.newInstanceWithSalt(1, new bytes(0), salt),                  0x5dB7F4612d8c6909610808413505A2c45061c8CB);
+        assertEq(factory.getDeterministicProxyAddress(salt), 0xb3a410DE19a595d3e2A62BAa47b423b35a0935Fb);
+        assertEq(factory.newInstance(1, new bytes(0), salt), 0xb3a410DE19a595d3e2A62BAa47b423b35a0935Fb);
     }
 
-    // TODO: test_newInstanceWithSalt_withNoInitializationArgs
+    // TODO: test_newInstance_withSaltAndNoInitializationArgs
 
-    // TODO: test_newInstanceWithSalt_withInitializationArgs
+    // TODO: test_newInstance_withSaltAndInitializationArgs
 
-    // TODO: testFail_newInstanceWithSalt_nonRegisteredImplementation
+    // TODO: testFail_newInstance_withSaltAndNonRegisteredImplementation
 
-    // TODO: testFail_newInstanceWithSalt_invalidVersion
+    // TODO: testFail_newInstance_withSaltAndInvalidVersion
 
-    // TODO: testFail_newInstanceWithSalt_invalidArguments?
+    // TODO: testFail_newInstance_withSaltAndInvalidArguments?
 
     function testFail_newInstanceWithSalt_reuseSalt() external {
         MockFactory          factory        = new MockFactory();
@@ -173,8 +173,8 @@ contract ProxyFactoryTests is DSTest {
         bytes32 salt = keccak256(abi.encodePacked("salt"));
 
         factory.registerImplementation(1, address(implementation));
-        factory.newInstanceWithSalt(1, new bytes(0), salt);
-        factory.newInstanceWithSalt(1, new bytes(0), salt);
+        factory.newInstance(1, new bytes(0), salt);
+        factory.newInstance(1, new bytes(0), salt);
     }
 
     // TODO: test_registerMigrator_set

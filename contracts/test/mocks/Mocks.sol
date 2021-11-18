@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import { IProxied } from "../../interfaces/IProxied.sol";
+import { IProxied }     from "../../interfaces/IProxied.sol";
+import { IProxyBeacon } from "../../interfaces/IProxyBeacon.sol";
 
 import { Proxied }           from "../../Proxied.sol";
 import { ProxyFactory }      from "../../ProxyFactory.sol";
 import { SlotManipulatable } from "../../SlotManipulatable.sol";
 
-contract MockFactory is ProxyFactory {
+contract MockFactory is IProxyBeacon, ProxyFactory {
+
+    address public fallbackInstanceImplementation;
 
     function implementation(uint256 version_) external view returns (address implementation_) {
         return _implementationOf[version_];
@@ -22,7 +25,7 @@ contract MockFactory is ProxyFactory {
     }
 
     function registerImplementation(uint256 version_, address implementationAddress_) external {
-        require(_registerImplementation(version_, implementationAddress_));
+        require(_registerImplementation(version_, fallbackInstanceImplementation = implementationAddress_));
     }
 
     function newInstance(uint256 version_, bytes calldata initializationArguments_) external returns (address proxy_) {
@@ -31,9 +34,9 @@ contract MockFactory is ProxyFactory {
         require(success);
     }
 
-    function newInstanceWithSalt(uint256 version_, bytes calldata initializationArguments_, bytes32 salt_) external returns (address proxy_) {
+    function newInstance(uint256 version_, bytes calldata initializationArguments_, bytes32 salt_) external returns (address proxy_) {
         bool success;
-        ( success, proxy_ ) = _newInstanceWithSalt(version_, initializationArguments_, salt_);
+        ( success, proxy_ ) = _newInstance(version_, initializationArguments_, salt_);
         require(success);
     }
 
@@ -45,8 +48,12 @@ contract MockFactory is ProxyFactory {
         require(_upgradeInstance(proxy_, toVersion_, migrationArguments_));
     }
 
-    function getDeterministicProxyAddress(address implementation_, bytes32 salt_) external view returns (address proxyAddress_) {
-        return _getDeterministicProxyAddress(implementation_, salt_);
+    function getDeterministicProxyAddress(bytes32 salt_) external view returns (address proxyAddress_) {
+        return _getDeterministicProxyAddress(salt_);
+    }
+
+    function instanceImplementation() external view override returns (address instanceImplementation_) {
+
     }
 
 }
