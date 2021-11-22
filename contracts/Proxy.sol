@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
+import { IDefaultImplementationBeacon } from "./interfaces/IDefaultImplementationBeacon.sol";
+
 import { SlotManipulatable } from "./SlotManipulatable.sol";
 
 /// @title A completely transparent, and thus interface-less, proxy contract.
@@ -13,12 +15,19 @@ contract Proxy is SlotManipulatable {
     bytes32 private constant IMPLEMENTATION_SLOT = bytes32(0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc);
 
     constructor(address factory_, address implementation_) {
-        _setSlotValue(FACTORY_SLOT,        bytes32(uint256(uint160(factory_))));
-        _setSlotValue(IMPLEMENTATION_SLOT, bytes32(uint256(uint160(implementation_))));
+        _setSlotValue(FACTORY_SLOT, bytes32(uint256(uint160(factory_))));
+
+        // If the implementation is empty, fetch it from the factory, which can act as a beacon.
+        _setSlotValue(
+            IMPLEMENTATION_SLOT,
+            bytes32(uint256(uint160(
+                implementation_ == address(0) ? IDefaultImplementationBeacon(factory_).defaultImplementation() : implementation_
+            )))
+        );
     }
 
-    function _fallback() private {
-        bytes32 implementation = _getSlotValue(IMPLEMENTATION_SLOT);
+    fallback() payable external virtual {
+        address implementation = address(uint160(uint256(_getSlotValue(IMPLEMENTATION_SLOT))));
 
         assembly {
             calldatacopy(0, 0, calldatasize())
@@ -35,10 +44,6 @@ contract Proxy is SlotManipulatable {
                 return(0, returndatasize())
             }
         }
-    }
-
-    fallback() payable external virtual {
-        _fallback();
     }
 
 }

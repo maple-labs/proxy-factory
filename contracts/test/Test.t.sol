@@ -160,6 +160,34 @@ contract Test is DSTest {
         assertEq(proxy1.getViewable(), 1313);
     }
 
+    function testFail_newInstance_nonRegisteredImplementation() external {
+        MockFactory factory = new MockFactory();
+        factory.newInstance(1, new bytes(0));
+    }
+
+    function test_newInstance_withSaltAndNoInitialization() external {
+        MockFactory          factory        = new MockFactory();
+        MockImplementationV1 implementation = new MockImplementationV1();
+
+        factory.registerImplementation(1, address(implementation));
+
+        bytes32 salt = keccak256(abi.encodePacked("salt"));
+
+        assertEq(factory.getDeterministicProxyAddress(salt), 0xf95859c9aaf83194580C5C58Ae361d4362a4Cdaa);
+        assertEq(factory.newInstance(1, new bytes(0), salt), 0xf95859c9aaf83194580C5C58Ae361d4362a4Cdaa);
+    }
+
+    function testFail_newInstance_withReusedSalt() external {
+        MockFactory          factory        = new MockFactory();
+        MockImplementationV1 implementation = new MockImplementationV1();
+
+        bytes32 salt = keccak256(abi.encodePacked("salt"));
+
+        factory.registerImplementation(1, address(implementation));
+        factory.newInstance(1, new bytes(0), salt);
+        factory.newInstance(1, new bytes(0), salt);
+    }
+
     function test_upgradeability_withNoMigration() external {
         MockFactory          factory          = new MockFactory();
         MockInitializerV1    initializerV1    = new MockInitializerV1();
@@ -329,31 +357,6 @@ contract Test is DSTest {
         assertEq(IMockImplementationV2(proxy).getLiteral(),  4444);
         assertEq(IMockImplementationV2(proxy).getConstant(), 5555);
         assertEq(IMockImplementationV2(proxy).getViewable(), 3333);
-    }
-
-    function test_newInstanceWithSalt() external {
-        MockFactory          factory        = new MockFactory();
-        MockImplementationV1 implementation = new MockImplementationV1();
-
-        factory.registerImplementation(1, address(implementation));
-
-        address proxy = factory.newInstanceWithSalt(1, new bytes(0), "salt");
-
-        assertEq(proxy, 0x01B2169064efE8E1F0a4503f503644D97dBebfAa);
-    }
-
-    function testFail_newInstanceWithSalt() external {
-        MockFactory          factory        = new MockFactory();
-        MockImplementationV1 implementation = new MockImplementationV1();
-
-        factory.registerImplementation(1, address(implementation));
-        factory.newInstanceWithSalt(1, new bytes(0), "salt");
-        factory.newInstanceWithSalt(1, new bytes(0), "salt");
-    }
-
-    function testFail_newInstance_nonRegisteredImplementation() external {
-        MockFactory factory = new MockFactory();
-        factory.newInstance(1, new bytes(0));
     }
 
     function testFail_upgrade_nonRegisteredImplementation() external {
