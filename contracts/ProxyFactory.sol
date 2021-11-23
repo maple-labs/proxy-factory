@@ -17,6 +17,8 @@ contract ProxyFactory {
     mapping(uint256 => mapping(uint256 => address)) internal _migratorForPath;
 
     function _initializeInstance(address proxy_, uint256 version_, bytes memory arguments_) internal virtual returns (bool success_) {
+        if (!_isContract(proxy_)) return false;
+
         address initializer = _migratorForPath[version_][version_];
 
         if (initializer == address(0)) return true;
@@ -42,7 +44,7 @@ contract ProxyFactory {
 
     function _registerImplementation(uint256 version_, address implementationAddress_) internal virtual returns (bool success_) {
         // Cannot already be registered and cannot be empty implementation.
-        if (_implementationOf[version_] != address(0) || implementationAddress_ == address(0)) return false;
+        if (_implementationOf[version_] != address(0) || !_isContract(implementationAddress_)) return false;
 
         _versionOf[implementationAddress_] = version_;
         _implementationOf[version_]        = implementationAddress_;
@@ -51,21 +53,32 @@ contract ProxyFactory {
     }
 
     function _registerMigrator(uint256 fromVersion_, uint256 toVersion_, address migrator_) internal virtual returns (bool success_) {
+        if (migrator_ != address(0) && !_isContract(migrator_)) return false;
+
         _migratorForPath[fromVersion_][toVersion_] = migrator_;
 
         return true;
     }
 
     function _upgradeInstance(address proxy_, uint256 toVersion_, bytes memory arguments_) internal virtual returns (bool success_) {
-        address implementation = _implementationOf[toVersion_];
+        if (!_isContract(proxy_)) return false;
 
-        if (implementation == address(0)) return false;
+        address toImplementation = _implementationOf[toVersion_];
 
-        address migrator = _migratorForPath[_versionOf[IProxied(proxy_).implementation()]][toVersion_];
+        if (toImplementation == address(0)) return false;
 
-        ( success_, ) = proxy_.call(abi.encodeWithSelector(IProxied.setImplementation.selector, implementation));
+        bytes memory returnData;
+
+        ( success_, returnData ) = proxy_.call(abi.encodeWithSelector(IProxied.implementation.selector));
 
         if (!success_) return false;
+
+        ( success_, ) = proxy_.call(abi.encodeWithSelector(IProxied.setImplementation.selector, toImplementation));
+
+        if (!success_) return false;
+
+        // Get the "fromImplementation" from `returnData`, then the version of the "fromImplementation", then get the `migrator` of the upgrade path.
+        address migrator = _migratorForPath[_versionOf[abi.decode(returnData, (address))]][toVersion_];
 
         if (migrator == address(0)) return true;
 
@@ -88,6 +101,16 @@ contract ProxyFactory {
                 )
             )
         );
+    }
+
+    function _isContract(address account_) internal view returns (bool) {
+        uint256 size;
+
+        assembly {
+            size := extcodesize(account_)
+        }
+
+        return size != uint256(0);
     }
 
 }

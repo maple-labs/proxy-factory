@@ -181,6 +181,10 @@ contract ProxyFactoryTests is DSTest {
 
     // TODO: test_registerMigrator_unset
 
+    function testFail_registerMigrator_withInvalidMigrator() external {
+        (new MockFactory()).registerMigrator(1, 2, address(1));
+    }
+
     function test_upgradeInstance_withNoMigration() external {
         MockFactory          factory          = new MockFactory();
         MockInitializerV1    initializerV1    = new MockInitializerV1();
