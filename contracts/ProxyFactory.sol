@@ -32,16 +32,16 @@ contract ProxyFactory {
             _initializeInstance(proxy_ = address(new Proxy(address(this), implementation)), version_, arguments_);
     }
 
-    function _newInstanceWithSalt(uint256 version_, bytes memory arguments_, bytes32 salt_) internal virtual returns (bool success_, address proxy_) {
+    function _newInstance(uint256 version_, bytes memory arguments_, bytes32 salt_) internal virtual returns (bool success_, address proxy_) {
         address implementation = _implementationOf[version_];
 
         success_ =
             implementation != address(0) &&
-            _initializeInstance(proxy_ = address(new Proxy{ salt: salt_ }(address(this), implementation)), version_, arguments_);
+            _initializeInstance(proxy_ = address(new Proxy{ salt: salt_ }(address(this), address(0))), version_, arguments_);
     }
 
     function _registerImplementation(uint256 version_, address implementationAddress_) internal virtual returns (bool success_) {
-        // Cannot already be registered and cannot be empty implementation
+        // Cannot already be registered and cannot be empty implementation.
         if (_implementationOf[version_] != address(0) || implementationAddress_ == address(0)) return false;
 
         _versionOf[implementationAddress_] = version_;
@@ -70,6 +70,24 @@ contract ProxyFactory {
         if (migrator == address(0)) return true;
 
         ( success_, ) = proxy_.call(abi.encodeWithSelector(IProxied.migrate.selector, migrator, arguments_));
+    }
+
+    function _getDeterministicProxyAddress(bytes32 salt_) internal virtual view returns (address proxyAddress_) {
+        // See https://docs.soliditylang.org/en/v0.8.7/control-structures.html#salted-contract-creations-create2
+        return address(
+            uint160(
+                uint256(
+                    keccak256(
+                        abi.encodePacked(
+                            bytes1(0xff),
+                            address(this),
+                            salt_,
+                            keccak256(abi.encodePacked(type(Proxy).creationCode, abi.encode(address(this), address(0))))
+                        )
+                    )
+                )
+            )
+        );
     }
 
 }
