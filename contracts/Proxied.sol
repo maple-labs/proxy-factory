@@ -13,6 +13,14 @@ contract Proxied is SlotManipulatable {
     bytes32 private constant IMPLEMENTATION_SLOT = bytes32(0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc);
 
     function _migrate(address migrator_, bytes calldata arguments_) internal virtual returns (bool success_) {
+        uint256 size;
+
+        assembly {
+            size := extcodesize(migrator_)
+        }
+
+        if (size == uint256(0)) return false;
+
         ( success_, ) = migrator_.delegatecall(arguments_);
     }
 
