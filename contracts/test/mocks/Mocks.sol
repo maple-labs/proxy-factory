@@ -391,6 +391,14 @@ contract MockMigratorV1ToV2WithNoArgs is SlotManipulatable {
 
 }
 
+contract MaliciousImplementation is SlotManipulatable {
+
+    bytes32 private constant IMPLEMENTATION_SLOT = bytes32(0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc);
+    fallback() external {
+        _setSlotValue(IMPLEMENTATION_SLOT, bytes32(uint256(uint160(222))));
+    }
+}
+
 contract ProxyWithIncorrectCode {
 
     address public factory;

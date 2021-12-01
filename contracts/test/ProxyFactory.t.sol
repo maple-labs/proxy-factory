@@ -8,6 +8,7 @@ import { Proxy } from "../Proxy.sol";
 import {
     IMockImplementationV1,
     IMockImplementationV2,
+    MaliciousImplementation,
     MockFactory,
     MockImplementationV1,
     MockImplementationV2,
@@ -152,8 +153,8 @@ contract ProxyFactoryTests is DSTest {
 
         bytes32 salt = keccak256(abi.encodePacked("salt"));
 
-        assertEq(factory.getDeterministicProxyAddress(salt), 0xf95859c9aaf83194580C5C58Ae361d4362a4Cdaa);
-        assertEq(factory.newInstance(1, new bytes(0), salt), 0xf95859c9aaf83194580C5C58Ae361d4362a4Cdaa);
+        assertEq(factory.getDeterministicProxyAddress(salt), 0x14FA484Bd9D11d9d970226a7b9FD03A5ae37Be60);
+        assertEq(factory.newInstance(1, new bytes(0), salt), 0x14FA484Bd9D11d9d970226a7b9FD03A5ae37Be60);
     }
 
     // TODO: test_newInstanceWithSalt_withNoInitializationArgs
@@ -405,6 +406,22 @@ contract ProxyFactoryTests is DSTest {
         assertEq(proxy1.getLiteral(),  2222);
         assertEq(proxy1.getConstant(), 1111);
         assertEq(proxy1.getViewable(), 1313);
+    }
+
+    function test_failureWithNonContract() external {
+        MockFactory             factory        = new MockFactory();
+        MaliciousImplementation implementation = new MaliciousImplementation();
+
+        // Registering malicious implementation
+        factory.registerImplementation(1, address(implementation));
+
+        assertEq(factory.implementation(1),                  address(implementation));
+        assertEq(factory.migratorForPath(1, 1),              address(0));
+        assertEq(factory.versionOf(address(implementation)), 1);
+
+        IMockImplementationV1 proxy = IMockImplementationV1(factory.newInstance(1, new bytes(0)));
+
+        try proxy.alpha() { assertTrue(false, "Proxy didn't revert"); } catch { } 
     }
 
 }
