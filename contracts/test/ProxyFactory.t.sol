@@ -421,7 +421,7 @@ contract ProxyFactoryTests is DSTest {
 
         IMockImplementationV1 proxy = IMockImplementationV1(factory.newInstance(1, new bytes(0)));
 
-        try proxy.alpha() { assertTrue(false, "proxy didn't revert"); } catch { } 
+        try proxy.alpha() { assertTrue(false, "Proxy didn't revert"); } catch { } 
     }
 
 }
