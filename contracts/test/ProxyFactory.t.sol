@@ -21,11 +21,49 @@ import {
 
 contract ProxyFactoryTests is DSTest {
 
-    // TODO: test_registerImplementation
+    function test_registerImplementation() external {
+        MockFactory          factory        = new MockFactory();
+        MockImplementationV1 implementation = new MockImplementationV1();
 
-    // TODO: testFail_registerImplementation_reuseVersion
+        assertEq(factory.implementation(1),                  address(0));
+        assertEq(factory.migratorForPath(1, 1),              address(0));
+        assertEq(factory.versionOf(address(implementation)), 0);
 
-    // TODO: testFail_registerImplementation_zeroImplementation
+        factory.registerImplementation(1, address(implementation));
+
+        assertEq(factory.implementation(1),                  address(implementation));
+        assertEq(factory.migratorForPath(1, 1),              address(0));
+        assertEq(factory.versionOf(address(implementation)), 1);
+    }
+
+    function test_registerImplementatio_reuseVersion() external {
+        MockFactory          factory         = new MockFactory();
+        MockImplementationV1 implementation1 = new MockImplementationV1();
+        MockImplementationV1 implementation2 = new MockImplementationV1();
+
+        assertEq(factory.implementation(1),                  address(0));
+        assertEq(factory.migratorForPath(1, 1),              address(0));
+        assertEq(factory.versionOf(address(implementation1)), 0);
+
+        factory.registerImplementation(1, address(implementation1));
+
+        assertEq(factory.implementation(1),                  address(implementation1));
+        assertEq(factory.migratorForPath(1, 1),              address(0));
+        assertEq(factory.versionOf(address(implementation1)), 1);
+
+        // try reusing the same version
+        try factory.registerImplementation(1, address(implementation2)) { assertTrue(false, "able to register"); } catch { }
+    }
+
+    function testFail_registerZeroImplementation() external {
+        MockFactory factory = new MockFactory();
+        factory.registerImplementation(1, address(0));
+    }
+
+    function testFail_registerNonContract() external {
+        MockFactory factory = new MockFactory();
+        factory.registerImplementation(1, address(22));
+    }
 
      function test_registerDuplicateImplementation() external {
         MockFactory          factory        = new MockFactory();
@@ -153,14 +191,47 @@ contract ProxyFactoryTests is DSTest {
         assertEq(proxy.derbyOf(2), 6161);
     }
 
+    function test_newInstance_invalidInitializerArguments() external {
+        MockFactory          factory        = new MockFactory();
+        MockInitializerV2    initializer    = new MockInitializerV2();
+        MockImplementationV2 implementation = new MockImplementationV2();
+
+        factory.registerMigrator(2, 2, address(initializer));
+        factory.registerImplementation(2, address(implementation));
+
+        assertEq(factory.implementation(2),                  address(implementation));
+        assertEq(factory.migratorForPath(2, 2),              address(initializer));
+        assertEq(factory.versionOf(address(implementation)), 2);
+
+        try factory.newInstance(2, new bytes(0)) { assertTrue(false, "able to create"); } catch { }
+
+        factory.newInstance(2, abi.encode(0));
+    }
+
     function testFail_newInstance_nonRegisteredImplementation() external {
         MockFactory factory = new MockFactory();
         factory.newInstance(1, new bytes(0));
     }
 
-    // TODO: testFail_newInstance_invalidVersion
+    function test_newInstance_withSaltAndInitialization() external {
+        MockFactory          factory        = new MockFactory();
+        MockInitializerV2    initializer    = new MockInitializerV2();
+        MockImplementationV2 implementation = new MockImplementationV2();
 
-    // TODO: testFail_newInstance_invalidArguments?
+        factory.registerMigrator(2, 2, address(initializer));
+        factory.registerImplementation(2, address(implementation));
+
+        assertEq(factory.implementation(2),                  address(implementation));
+        assertEq(factory.migratorForPath(2, 2),              address(initializer));
+        assertEq(factory.versionOf(address(implementation)), 2);
+
+        bytes32 salt = keccak256(abi.encodePacked("salt"));
+
+        IMockImplementationV2 proxy = IMockImplementationV2(factory.newInstance(2, abi.encode(uint256(9090)), salt));
+        
+        assertEq(proxy.factory(),        address(factory));
+        assertEq(proxy.implementation(), address(implementation));
+    }
 
     function test_newInstance_withSaltAndNoInitialization() external {
         MockFactory          factory        = new MockFactory();
@@ -174,15 +245,29 @@ contract ProxyFactoryTests is DSTest {
         assertEq(factory.newInstance(1, new bytes(0), salt), 0x14FA484Bd9D11d9d970226a7b9FD03A5ae37Be60);
     }
 
-    // TODO: test_newInstanceWithSalt_withNoInitializationArgs
+    function test_newInstance_withSaltAndInvalidInitializerArguments() external {
+        MockFactory          factory        = new MockFactory();
+        MockInitializerV2    initializer    = new MockInitializerV2();
+        MockImplementationV2 implementation = new MockImplementationV2();
 
-    // TODO: test_newInstanceWithSalt_withInitializationArgs
+        factory.registerMigrator(2, 2, address(initializer));
+        factory.registerImplementation(2, address(implementation));
 
-    // TODO: testFail_newInstanceWithSalt_nonRegisteredImplementation
+        assertEq(factory.implementation(2),                  address(implementation));
+        assertEq(factory.migratorForPath(2, 2),              address(initializer));
+        assertEq(factory.versionOf(address(implementation)), 2);
 
-    // TODO: testFail_newInstanceWithSalt_invalidVersion
+        bytes32 salt = keccak256(abi.encodePacked("salt"));
 
-    // TODO: testFail_newInstanceWithSalt_invalidArguments?
+        try factory.newInstance(2, new bytes(0), salt) { assertTrue(false, "able to create"); } catch { }
+
+        factory.newInstance(2, abi.encode(0), salt);
+    }
+
+    function testFail_newInstance_withSaltAndNonRegisteredImplementation() external {
+        MockFactory factory = new MockFactory();
+        factory.newInstance(1, new bytes(0), keccak256(abi.encodePacked("salt")));
+    }
 
     function testFail_newInstance_withReusedSalt() external {
         MockFactory          factory        = new MockFactory();
@@ -194,10 +279,6 @@ contract ProxyFactoryTests is DSTest {
         factory.newInstance(1, new bytes(0), salt);
         factory.newInstance(1, new bytes(0), salt);
     }
-
-    // TODO: test_registerMigrator_set
-
-    // TODO: test_registerMigrator_unset
 
     function testFail_registerMigrator_withInvalidMigrator() external {
         (new MockFactory()).registerMigrator(1, 2, address(1));
@@ -388,11 +469,37 @@ contract ProxyFactoryTests is DSTest {
         factory.upgradeInstance(proxy, 2, new bytes(0));
     }
 
-    // TODO: testFail_upgradeInstance_invalidVersion
+    function test_upgradeInstance_failWithInvalidMigrationArgs() external {
+        MockFactory          factory          = new MockFactory();
+        MockMigratorV1ToV2   migrator         = new MockMigratorV1ToV2();
+        MockImplementationV1 implementationV1 = new MockImplementationV1();
+        MockImplementationV2 implementationV2 = new MockImplementationV2();
 
-    // TODO: testFail_upgradeInstance_proxyHasInvalidImplementation
+        // Register V1, its initializer, and deploy a proxy.
+        factory.registerImplementation(1, address(implementationV1));
+        address proxy = factory.newInstance(1, new bytes(0));
 
-    // TODO: testFail_upgradeInstance_invalidArguments?
+        // Register V2, its initializer, and a migrator.
+        factory.registerMigrator(1, 2, address(migrator));
+        factory.registerImplementation(2, address(implementationV2));
+
+        assertEq(factory.migratorForPath(1, 2), address(migrator));
+
+        // Check state before migration.
+        assertEq(IMockImplementationV1(proxy).implementation(), address(implementationV1));
+   
+        // Try migrate proxy from V1 to V2.
+        try factory.upgradeInstance(proxy, 2, new bytes(0)) { assertTrue(false, "able to migrate"); } catch { }
+
+        // Check if migration failed.
+        assertEq(IMockImplementationV1(proxy).implementation(), address(implementationV1));
+
+        factory.upgradeInstance(proxy, 2, abi.encode(22));
+
+        assertEq(IMockImplementationV2(proxy).implementation(), address(implementationV2));
+    }
+
+
 
     function test_composability() external {
         MockFactory          factory        = new MockFactory();

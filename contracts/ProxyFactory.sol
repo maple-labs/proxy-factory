@@ -50,6 +50,7 @@ contract ProxyFactory {
             !_isContract(implementationAddress_)
         ) return false;
 
+        // TODO _versionOf[implementation] might already exist and here we're overriding it.
         _versionOf[implementationAddress_] = version_;
         _implementationOf[version_]        = implementationAddress_;
 
