@@ -44,7 +44,11 @@ contract ProxyFactory {
 
     function _registerImplementation(uint256 version_, address implementationAddress_) internal virtual returns (bool success_) {
         // Cannot already be registered and cannot be empty implementation.
-        if (_implementationOf[version_] != address(0) || !_isContract(implementationAddress_)) return false;
+        if (
+            _implementationOf[version_] != address(0) || 
+            _versionOf[implementationAddress_] != 0   || 
+            !_isContract(implementationAddress_)
+        ) return false;
 
         _versionOf[implementationAddress_] = version_;
         _implementationOf[version_]        = implementationAddress_;
