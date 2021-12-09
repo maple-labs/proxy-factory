@@ -24,8 +24,8 @@ contract MockFactory is IDefaultImplementationBeacon, ProxyFactory {
         return _versionOf[proxy_];
     }
 
-    function registerImplementation(uint256 version_, address implementationAddress_) external {
-        require(_registerImplementation(version_, defaultImplementation = implementationAddress_));
+    function registerImplementation(uint256 version_, address implementation_) external {
+        require(_registerImplementation(version_, defaultImplementation = implementation_));
     }
 
     function newInstance(uint256 version_, bytes calldata initializationArguments_) external returns (address proxy_) {
@@ -34,9 +34,9 @@ contract MockFactory is IDefaultImplementationBeacon, ProxyFactory {
         require(success);
     }
 
-    function newInstance(uint256 version_, bytes calldata initializationArguments_, bytes32 salt_) external returns (address proxy_) {
+    function newInstance(bytes calldata initializationArguments_, bytes32 salt_) external returns (address proxy_) {
         bool success;
-        ( success, proxy_ ) = _newInstance(version_, initializationArguments_, salt_);
+        ( success, proxy_ ) = _newInstance(initializationArguments_, salt_);
         require(success);
     }
 

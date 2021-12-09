@@ -1,35 +1,35 @@
 {
-  "language": "Solidity",
-  "sources": {
-    "contracts/ProxyFactory.sol": {
-      "urls": ["contracts/ProxyFactory.sol"]
+    "language": "Solidity",
+    "sources": {
+        "contracts/ProxyFactory.sol": {
+            "urls": ["contracts/ProxyFactory.sol"]
+        },
+        "contracts/test/ProxyFactory.t.sol": {
+            "urls": ["contracts/test/ProxyFactory.t.sol"]
+        },
+        "contracts/test/SlotManipulatable.t.sol": {
+            "urls": [
+                "contracts/test/SlotManipulatable.t.sol"
+            ]
+        }
     },
-    "contracts/test/ProxyFactory.t.sol": {
-      "urls": ["contracts/test/ProxyFactory.t.sol"]
-    },
-    "contracts/test/SlotManipulatable.t.sol": {
-      "urls": [
-        "contracts/test/SlotManipulatable.t.sol"
-      ]
+    "settings": {
+        "optimizer": {
+            "enabled": true,
+            "runs": 200
+        },
+        "outputSelection": {
+            "*": {
+                "*": [
+                    "abi",
+                    "evm.bytecode",
+                    "evm.deployedBytecode"
+                ],
+                "": ["ast"]
+            }
+        },
+        "metadata": {
+            "bytecodeHash": "none"
+        }
     }
-  },
-  "settings": {
-    "optimizer": {
-      "enabled": true,
-      "runs": 200
-    },
-    "outputSelection": {
-      "*": {
-        "*": [
-          "abi",
-          "evm.bytecode",
-          "evm.deployedBytecode"
-        ],
-        "": ["ast"]
-      }
-    },
-    "metadata": {
-      "bytecodeHash": "none"
-    }
-  }
 }
