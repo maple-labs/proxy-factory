@@ -27,6 +27,23 @@ contract ProxyFactoryTests is DSTest {
 
     // TODO: testFail_registerImplementation_zeroImplementation
 
+     function test_registerDuplicateImplementation() external {
+        MockFactory          factory        = new MockFactory();
+        MockImplementationV1 implementation = new MockImplementationV1();
+
+        assertEq(factory.implementation(1),                  address(0));
+        assertEq(factory.migratorForPath(1, 1),              address(0));
+        assertEq(factory.versionOf(address(implementation)), 0);
+
+        factory.registerImplementation(1, address(implementation));
+
+        assertEq(factory.implementation(1),                  address(implementation));
+        assertEq(factory.migratorForPath(1, 1),              address(0));
+        assertEq(factory.versionOf(address(implementation)), 1);
+
+        try factory.registerImplementation(2, address(implementation)) { assertTrue(false, "Able to register duplicate implementation"); } catch { }
+    }
+
     function test_newInstance_withNoInitialization() external {
         MockFactory          factory        = new MockFactory();
         MockImplementationV1 implementation = new MockImplementationV1();
