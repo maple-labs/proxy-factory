@@ -21,6 +21,10 @@ import {
 
 contract ProxyFactoryTests is DSTest {
 
+    /************************************/
+    /*** registerImplementation tests ***/
+    /************************************/
+
     function test_registerImplementation() external {
         MockFactory          factory        = new MockFactory();
         MockImplementationV1 implementation = new MockImplementationV1();
@@ -36,51 +40,39 @@ contract ProxyFactoryTests is DSTest {
         assertEq(factory.versionOf(address(implementation)), 1);
     }
 
-    function test_registerImplementatio_reuseVersion() external {
+    function test_registerImplementation_fail_overwriteImplementation() external {
         MockFactory          factory         = new MockFactory();
         MockImplementationV1 implementation1 = new MockImplementationV1();
         MockImplementationV1 implementation2 = new MockImplementationV1();
 
-        assertEq(factory.implementation(1),                  address(0));
-        assertEq(factory.migratorForPath(1, 1),              address(0));
-        assertEq(factory.versionOf(address(implementation1)), 0);
-
         factory.registerImplementation(1, address(implementation1));
 
-        assertEq(factory.implementation(1),                  address(implementation1));
-        assertEq(factory.migratorForPath(1, 1),              address(0));
-        assertEq(factory.versionOf(address(implementation1)), 1);
-
-        // try reusing the same version
-        try factory.registerImplementation(1, address(implementation2)) { assertTrue(false, "able to register"); } catch { }
+        // Try reusing the same version
+        try factory.registerImplementation(1, address(implementation2)) { assertTrue(false, "Able to overwrite implementation"); } catch { }
     }
 
-    function testFail_registerZeroImplementation() external {
+    function testFail_registerImplementation_zeroImplementation() external {
         MockFactory factory = new MockFactory();
         factory.registerImplementation(1, address(0));
     }
 
-    function testFail_registerNonContract() external {
+    function testFail_registerImplementation_nonContract() external {
         MockFactory factory = new MockFactory();
         factory.registerImplementation(1, address(22));
     }
 
-     function test_registerDuplicateImplementation() external {
+     function test_registerImplementation_fail_duplicateImplementation() external {
         MockFactory          factory        = new MockFactory();
         MockImplementationV1 implementation = new MockImplementationV1();
 
-        assertEq(factory.implementation(1),                  address(0));
-        assertEq(factory.migratorForPath(1, 1),              address(0));
-        assertEq(factory.versionOf(address(implementation)), 0);
-
         factory.registerImplementation(1, address(implementation));
-
-        assertEq(factory.implementation(1),                  address(implementation));
-        assertEq(factory.migratorForPath(1, 1),              address(0));
-        assertEq(factory.versionOf(address(implementation)), 1);
 
         try factory.registerImplementation(2, address(implementation)) { assertTrue(false, "Able to register duplicate implementation"); } catch { }
     }
+
+    /*************************/
+    /*** newInstance tests ***/
+    /*************************/
 
     function test_newInstance_withNoInitialization() external {
         MockFactory          factory        = new MockFactory();
@@ -280,6 +272,12 @@ contract ProxyFactoryTests is DSTest {
         factory.newInstance(1, new bytes(0), salt);
     }
 
+    /******************************/
+    /*** registerMigrator tests ***/
+    /******************************/
+
+    // TODO: Successful registerMigrator
+
     function testFail_registerMigrator_withInvalidMigrator() external {
         (new MockFactory()).registerMigrator(1, 2, address(1));
     }
@@ -338,6 +336,10 @@ contract ProxyFactoryTests is DSTest {
         assertEq(IMockImplementationV2(proxy).getConstant(), 5555);
         assertEq(IMockImplementationV2(proxy).getViewable(), 1414);
     }
+
+    /*****************************/
+    /*** upgradeInstance tests ***/
+    /*****************************/
 
     function test_upgradeInstance_withMigrationArgs() external {
         MockFactory          factory          = new MockFactory();
@@ -499,7 +501,9 @@ contract ProxyFactoryTests is DSTest {
         assertEq(IMockImplementationV2(proxy).implementation(), address(implementationV2));
     }
 
-
+    /***************************/
+    /*** Miscellaneous tests ***/
+    /***************************/
 
     function test_composability() external {
         MockFactory          factory        = new MockFactory();
@@ -532,7 +536,7 @@ contract ProxyFactoryTests is DSTest {
         assertEq(proxy1.getViewable(), 1313);
     }
 
-    function test_failureWithNonContract() external {
+    function test_failureWithNonContractImplementation() external {
         MockFactory             factory        = new MockFactory();
         MaliciousImplementation implementation = new MaliciousImplementation();
 
