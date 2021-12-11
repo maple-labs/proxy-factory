@@ -18,12 +18,11 @@ contract Proxy is SlotManipulatable {
         _setSlotValue(FACTORY_SLOT, bytes32(uint256(uint160(factory_))));
 
         // If the implementation is empty, fetch it from the factory, which can act as a beacon.
-        _setSlotValue(
-            IMPLEMENTATION_SLOT,
-            bytes32(uint256(uint160(
-                implementation_ == address(0) ? IDefaultImplementationBeacon(factory_).defaultImplementation() : implementation_
-            )))
-        );
+        address implementation = implementation_ == address(0) ? IDefaultImplementationBeacon(factory_).defaultImplementation() : implementation_;
+
+        require(implementation != address(0), "P:C:INVALID_IMPLEMENTATION");
+
+        _setSlotValue(IMPLEMENTATION_SLOT, bytes32(uint256(uint160(implementation))));
     }
 
     fallback() payable external virtual {
