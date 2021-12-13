@@ -10,7 +10,7 @@
 # Changelog
 ## Function Signature Changes
 
-## Features 
+## Features
 
 ## Events
 

@@ -24,8 +24,13 @@ contract Proxied is SlotManipulatable {
         ( success_, ) = migrator_.delegatecall(arguments_);
     }
 
-    function _setImplementation(address newImplementation_) internal virtual returns (bool success_) {
-        _setSlotValue(IMPLEMENTATION_SLOT, bytes32(uint256(uint160(newImplementation_))));
+    function _setFactory(address factory_) internal virtual returns (bool success_) {
+        _setSlotValue(FACTORY_SLOT, bytes32(uint256(uint160(factory_))));
+        return true;
+    }
+
+    function _setImplementation(address implementation_) internal virtual returns (bool success_) {
+        _setSlotValue(IMPLEMENTATION_SLOT, bytes32(uint256(uint160(implementation_))));
         return true;
     }
 

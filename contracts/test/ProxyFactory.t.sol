@@ -219,8 +219,8 @@ contract ProxyFactoryTests is DSTest {
 
         bytes32 salt = keccak256(abi.encodePacked("salt"));
 
-        IMockImplementationV2 proxy = IMockImplementationV2(factory.newInstance(2, abi.encode(uint256(9090)), salt));
-        
+        IMockImplementationV2 proxy = IMockImplementationV2(factory.newInstance(abi.encode(uint256(9090)), salt));
+
         assertEq(proxy.factory(),        address(factory));
         assertEq(proxy.implementation(), address(implementation));
     }
@@ -234,7 +234,7 @@ contract ProxyFactoryTests is DSTest {
         bytes32 salt = keccak256(abi.encodePacked("salt"));
 
         assertEq(factory.getDeterministicProxyAddress(salt), 0x01E7fFbDA7F30087c376259c0771577D4c4a57b1);
-        assertEq(factory.newInstance(1, new bytes(0), salt), 0x01E7fFbDA7F30087c376259c0771577D4c4a57b1);
+        assertEq(factory.newInstance(new bytes(0), salt),    0x01E7fFbDA7F30087c376259c0771577D4c4a57b1);
     }
 
     function test_newInstance_withSaltAndInvalidInitializerArguments() external {
@@ -251,14 +251,14 @@ contract ProxyFactoryTests is DSTest {
 
         bytes32 salt = keccak256(abi.encodePacked("salt"));
 
-        try factory.newInstance(2, new bytes(0), salt) { assertTrue(false, "Able to create with invalid arguments"); } catch { }
+        try factory.newInstance(new bytes(0), salt) { assertTrue(false, "able to create"); } catch { }
 
-        factory.newInstance(2, abi.encode(0), salt);
+        factory.newInstance(abi.encode(0), salt);
     }
 
     function testFail_newInstance_withSaltAndNonRegisteredImplementation() external {
         MockFactory factory = new MockFactory();
-        factory.newInstance(1, new bytes(0), keccak256(abi.encodePacked("salt")));
+        factory.newInstance(new bytes(0), keccak256(abi.encodePacked("salt")));
     }
 
     function testFail_newInstance_withReusedSalt() external {
@@ -268,8 +268,8 @@ contract ProxyFactoryTests is DSTest {
         bytes32 salt = keccak256(abi.encodePacked("salt"));
 
         factory.registerImplementation(1, address(implementation));
-        factory.newInstance(1, new bytes(0), salt);
-        factory.newInstance(1, new bytes(0), salt);
+        factory.newInstance(new bytes(0), salt);
+        factory.newInstance(new bytes(0), salt);
     }
 
     /******************************/
@@ -489,7 +489,7 @@ contract ProxyFactoryTests is DSTest {
 
         // Check state before migration.
         assertEq(IMockImplementationV1(proxy).implementation(), address(implementationV1));
-   
+
         // Try migrate proxy from V1 to V2.
         try factory.upgradeInstance(proxy, 2, new bytes(0)) { assertTrue(false, "Able to migrate with invalid arguments"); } catch { }
 
@@ -549,7 +549,7 @@ contract ProxyFactoryTests is DSTest {
 
         IMockImplementationV1 proxy = IMockImplementationV1(factory.newInstance(1, new bytes(0)));
 
-        try proxy.alpha() { assertTrue(false, "Proxy didn't revert"); } catch { } 
+        try proxy.alpha() { assertTrue(false, "Proxy didn't revert"); } catch { }
     }
 
 }
