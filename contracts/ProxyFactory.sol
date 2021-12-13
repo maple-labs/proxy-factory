@@ -36,21 +36,32 @@ contract ProxyFactory {
     }
 
     /// @notice Deploys a new proxy for some version, with some initialization arguments, using `create` (i.e. factory's nonce determines the address).
+    /// @dev    Inheritor should revert if `success_ = false`, since proxy may have been created despite initializing failing.
     function _newInstance(uint256 version_, bytes memory arguments_) internal virtual returns (bool success_, address proxy_) {
         address implementation = _implementationOf[version_];
 
         if (implementation == address(0)) return (false, address(0));
 
-        proxy_   = address(new Proxy(address(this), implementation));
-        success_ = _initializeInstance(proxy_, version_, arguments_);
+        // Build the Proxy creation code in memory, with the factory and implementation as arguments.
+        bytes memory creationCode = abi.encodePacked(type(Proxy).creationCode, abi.encode(address(this), implementation));
+
+        assembly { proxy_ := create(0, add(creationCode, 0x20), mload(creationCode)) }
+
+        // Successful if proxy is nonzero and initializing the instance succeeds.
+        success_ = (proxy_ != address(0)) && _initializeInstance(proxy_, version_, arguments_);
     }
 
     /// @notice Deploys a new proxy, with some initialization arguments, using `create2` (i.e. salt determines the address).
     /// @dev    This factory needs to be IDefaultImplementationBeacon, since the proxy will pull its implementation from it.
+    /// @dev    Inheritor should revert if `success_ = false`, since proxy may have been created despite initializing failing.
     function _newInstance(bytes memory arguments_, bytes32 salt_) internal virtual returns (bool success_, address proxy_) {
-        proxy_ = address(new Proxy{ salt: salt_ }(address(this), address(0)));
+        // Build the Proxy creation code in memory, with the factory and implementation as arguments.
+        bytes memory creationCode = abi.encodePacked(type(Proxy).creationCode, abi.encode(address(this), address(0)));
 
-        // Fetch the implementation from the proxy. Don't care about success, since the version of the implementation will be checked in the nest step.
+        // Don't need to check that deployment worked (`proxy_ != address(0)`), since subsequent steps will fail if it failed.
+        assembly { proxy_ := create2(0, add(creationCode, 0x20), mload(creationCode), salt_) }
+
+        // Fetch the implementation from the proxy. Don't care about success, since the version of the implementation will be checked in the next step.
         ( , address implementation ) = _getImplementationOfProxy(proxy_);
 
         // Get the version of the implementation.
