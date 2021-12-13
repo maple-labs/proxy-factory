@@ -195,11 +195,7 @@ contract ProxyFactoryTests is DSTest {
         assertEq(factory.migratorForPath(2, 2),              address(initializer));
         assertEq(factory.versionOf(address(implementation)), 2);
 
-<<<<<<< HEAD
         try factory.newInstance(2, new bytes(0)) { assertTrue(false, "Able to create with invalid arguments"); } catch { }
-=======
-        try factory.newInstance(2, new bytes(0)) { assertTrue(false, "able to create"); } catch { }
->>>>>>> a17cb63 (feat: added missing unit tests)
 
         factory.newInstance(2, abi.encode(0));
     }
@@ -213,7 +209,6 @@ contract ProxyFactoryTests is DSTest {
         MockFactory          factory        = new MockFactory();
         MockInitializerV2    initializer    = new MockInitializerV2();
         MockImplementationV2 implementation = new MockImplementationV2();
-<<<<<<< HEAD
 
         factory.registerMigrator(2, 2, address(initializer));
         factory.registerImplementation(2, address(implementation));
@@ -224,18 +219,6 @@ contract ProxyFactoryTests is DSTest {
 
         bytes32 salt = keccak256(abi.encodePacked("salt"));
 
-=======
-
-        factory.registerMigrator(2, 2, address(initializer));
-        factory.registerImplementation(2, address(implementation));
-
-        assertEq(factory.implementation(2),                  address(implementation));
-        assertEq(factory.migratorForPath(2, 2),              address(initializer));
-        assertEq(factory.versionOf(address(implementation)), 2);
-
-        bytes32 salt = keccak256(abi.encodePacked("salt"));
-
->>>>>>> a17cb63 (feat: added missing unit tests)
         IMockImplementationV2 proxy = IMockImplementationV2(factory.newInstance(2, abi.encode(uint256(9090)), salt));
         
         assertEq(proxy.factory(),        address(factory));
@@ -261,7 +244,6 @@ contract ProxyFactoryTests is DSTest {
 
         factory.registerMigrator(2, 2, address(initializer));
         factory.registerImplementation(2, address(implementation));
-<<<<<<< HEAD
 
         assertEq(factory.implementation(2),                  address(implementation));
         assertEq(factory.migratorForPath(2, 2),              address(initializer));
@@ -269,25 +251,11 @@ contract ProxyFactoryTests is DSTest {
 
         bytes32 salt = keccak256(abi.encodePacked("salt"));
 
-        try factory.newInstance(2, new bytes(0), salt) { assertTrue(false, "able to create"); } catch { }
+        try factory.newInstance(2, new bytes(0), salt) { assertTrue(false, "Able to create with invalid arguments"); } catch { }
 
         factory.newInstance(2, abi.encode(0), salt);
     }
 
-=======
-
-        assertEq(factory.implementation(2),                  address(implementation));
-        assertEq(factory.migratorForPath(2, 2),              address(initializer));
-        assertEq(factory.versionOf(address(implementation)), 2);
-
-        bytes32 salt = keccak256(abi.encodePacked("salt"));
-
-        try factory.newInstance(2, new bytes(0), salt) { assertTrue(false, "able to create"); } catch { }
-
-        factory.newInstance(2, abi.encode(0), salt);
-    }
-
->>>>>>> a17cb63 (feat: added missing unit tests)
     function testFail_newInstance_withSaltAndNonRegisteredImplementation() external {
         MockFactory factory = new MockFactory();
         factory.newInstance(1, new bytes(0), keccak256(abi.encodePacked("salt")));
@@ -304,23 +272,12 @@ contract ProxyFactoryTests is DSTest {
         factory.newInstance(1, new bytes(0), salt);
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     /******************************/
     /*** registerMigrator Tests ***/
-=======
-    /******************************/
-    /*** registerMigrator tests ***/
->>>>>>> ba3fdf5 (fix: update section labels, test names, rm unnecessary assertions)
     /******************************/
 
     // TODO: Successful registerMigrator
 
-<<<<<<< HEAD
-=======
->>>>>>> a17cb63 (feat: added missing unit tests)
-=======
->>>>>>> ba3fdf5 (fix: update section labels, test names, rm unnecessary assertions)
     function testFail_registerMigrator_withInvalidMigrator() external {
         (new MockFactory()).registerMigrator(1, 2, address(1));
     }
@@ -381,11 +338,7 @@ contract ProxyFactoryTests is DSTest {
     }
 
     /*****************************/
-<<<<<<< HEAD
     /*** upgradeInstance Tests ***/
-=======
-    /*** upgradeInstance tests ***/
->>>>>>> ba3fdf5 (fix: update section labels, test names, rm unnecessary assertions)
     /*****************************/
 
     function test_upgradeInstance_withMigrationArgs() external {
@@ -549,11 +502,7 @@ contract ProxyFactoryTests is DSTest {
     }
 
     /***************************/
-<<<<<<< HEAD
     /*** Miscellaneous Tests ***/
-=======
-    /*** Miscellaneous tests ***/
->>>>>>> ba3fdf5 (fix: update section labels, test names, rm unnecessary assertions)
     /***************************/
 
     function test_composability() external {
