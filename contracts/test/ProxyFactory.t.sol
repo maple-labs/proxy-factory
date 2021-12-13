@@ -22,7 +22,7 @@ import {
 contract ProxyFactoryTests is DSTest {
 
     /************************************/
-    /*** registerImplementation tests ***/
+    /*** registerImplementation Tests ***/
     /************************************/
 
     function test_registerImplementation() external {
@@ -71,7 +71,7 @@ contract ProxyFactoryTests is DSTest {
     }
 
     /*************************/
-    /*** newInstance tests ***/
+    /*** newInstance Tests ***/
     /*************************/
 
     function test_newInstance_withNoInitialization() external {
@@ -195,7 +195,7 @@ contract ProxyFactoryTests is DSTest {
         assertEq(factory.migratorForPath(2, 2),              address(initializer));
         assertEq(factory.versionOf(address(implementation)), 2);
 
-        try factory.newInstance(2, new bytes(0)) { assertTrue(false, "able to create"); } catch { }
+        try factory.newInstance(2, new bytes(0)) { assertTrue(false, "Able to create with invalid arguments"); } catch { }
 
         factory.newInstance(2, abi.encode(0));
     }
@@ -273,7 +273,7 @@ contract ProxyFactoryTests is DSTest {
     }
 
     /******************************/
-    /*** registerMigrator tests ***/
+    /*** registerMigrator Tests ***/
     /******************************/
 
     // TODO: Successful registerMigrator
@@ -338,7 +338,7 @@ contract ProxyFactoryTests is DSTest {
     }
 
     /*****************************/
-    /*** upgradeInstance tests ***/
+    /*** upgradeInstance Tests ***/
     /*****************************/
 
     function test_upgradeInstance_withMigrationArgs() external {
@@ -491,7 +491,7 @@ contract ProxyFactoryTests is DSTest {
         assertEq(IMockImplementationV1(proxy).implementation(), address(implementationV1));
    
         // Try migrate proxy from V1 to V2.
-        try factory.upgradeInstance(proxy, 2, new bytes(0)) { assertTrue(false, "able to migrate"); } catch { }
+        try factory.upgradeInstance(proxy, 2, new bytes(0)) { assertTrue(false, "Able to migrate with invalid arguments"); } catch { }
 
         // Check if migration failed.
         assertEq(IMockImplementationV1(proxy).implementation(), address(implementationV1));
@@ -502,7 +502,7 @@ contract ProxyFactoryTests is DSTest {
     }
 
     /***************************/
-    /*** Miscellaneous tests ***/
+    /*** Miscellaneous Tests ***/
     /***************************/
 
     function test_composability() external {
