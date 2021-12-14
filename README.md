@@ -25,22 +25,22 @@ Responsible for deploying new Proxy instances and triggering initialization and 
     contract ProxyFactory {
 
         /// @dev Registers a new implementation address attached to a version, which can be used with any uint256 versioning scheme.
-        function _registerImplementation(uint256 version, address implementationAddress) internal virtual returns (bool success);
+        function _registerImplementation(uint256 version_, address implementationAddress_) internal virtual returns (bool success_);
 
         /// @dev Deploys a new Proxy instance and calls the initialization function with provided arguments.
-        function _newInstance(uint256 version, bytes calldata arguments) internal virtual returns (bool success, address proxy);
+        function _newInstance(uint256 version_, bytes calldata arguments_) internal virtual returns (bool success_, address proxy_);
 
         /// @dev Deploys a new new Proxy instance at a specific address using a salt and calls the initialization function with provided arguments.
-        function _newInstanceWithSalt(uint256 version, bytes calldata arguments, bytes32 salt) internal virtual returns (bool success, address proxy); 
+        function _newInstanceWithSalt(uint256 version_, bytes calldata arguments_, bytes32 salt_) internal virtual returns (bool success_, address proxy_); 
 
         /// @dev Calls the Proxy with arguments to perform the necessary initialization.
-        function _initializeInstance(address proxy, uint256 version, bytes calldata arguments) internal virtual returns (bool success); 
+        function _initializeInstance(address proxy_, uint256 version_, bytes calldata arguments_) internal virtual returns (bool success_); 
 
         /// @dev Registers a migrator contract to be used to optionally migrate between versions, when upgrading.
-        function _registerMigrator(uint256 fromVersion, uint256 toVersion, address migrator) internal virtual returns (bool success); 
+        function _registerMigrator(uint256 fromVersion_, uint256 toVersion_, address migrator_) internal virtual returns (bool success_); 
 
         /// @dev Updates the implementation used by a Proxy.
-        function _upgradeInstance(address proxy, uint256 toVersion, bytes calldata arguments) internal virtual returns (bool success); 
+        function _upgradeInstance(address proxy_, uint256 toVersion_, bytes calldata arguments_) internal virtual returns (bool success_); 
     }
 ```
 
@@ -74,13 +74,13 @@ Helper contract that can manually modify storage when necessary (i.e., during a 
  contract SlotManipulatable {
 
     /// @dev Returns the value stored at the given slot.
-    function _getSlotValue(bytes32 slot) internal view returns (bytes32 value); 
+    function _getSlotValue(bytes32 slot_) internal view returns (bytes32 value_); 
 
     /// @dev Sets the value stored at the given slot.
-    function _setSlotValue(bytes32 slot, bytes32 value) internal; 
+    function _setSlotValue(bytes32 slot_, bytes32 value_) internal; 
 
     // @dev Returns the storage slot for a reference type.
-    function _getReferenceTypeSlot(bytes32 slot, bytes32 key) internal pure returns (bytes32 value); 
+    function _getReferenceTypeSlot(bytes32 slot_, bytes32 key_) internal pure returns (bytes32 value_); 
 
 }
 ```
