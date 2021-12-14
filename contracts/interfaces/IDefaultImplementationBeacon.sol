@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.7;
 
 /// @title An beacon that provides a default implementation for proxies, must implement IDefaultImplementationBeacon.

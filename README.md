@@ -19,51 +19,36 @@ Set of base contracts to deploy and manage versions on chain, designed to be min
 
 `ProxyFactory.sol`
 
-Responsible for deploying new Proxy instances and triggering initialization and migration logic atomically. 
+Responsible for deploying new Proxy instances and triggering initialization and migration logic atomically.
+**NOTE: All factories that inherit ProxyFactory MUST also inherit IDefaultImpleemntationBeacon and implement `defaultImplementation` if the CREATE2 functionality of `_newInstance` is to be used.**
 
 ```js
     contract ProxyFactory {
 
-        /// @dev Registers a new implementation address attached to a version, which can be used with any uint256 versioning scheme.
-        function _registerImplementation(uint256 version, address implementationAddress) internal virtual returns (bool success);
+        /// @notice Deploys a new proxy for some version, with some initialization arguments, using `create` (i.e. factory's nonce determines the address).
+        function _newInstance(uint256 version_, bytes memory arguments_) internal virtual returns (bool success_, address proxy_);
 
-        /// @dev Deploys a new Proxy instance and calls the initialization function with provided arguments.
-        function _newInstance(uint256 version, bytes calldata arguments) internal virtual returns (bool success, address proxy);
+        /// @notice Deploys a new proxy, with some initialization arguments, using `create2` (i.e. salt determines the address).
+        /// @dev    This factory needs to be IDefaultImplementationBeacon, since the proxy will pull its implementation from it.
+        function _newInstance(bytes memory arguments_, bytes32 salt_) internal virtual returns (bool success_, address proxy_);
 
-        /// @dev Deploys a new new Proxy instance at a specific address using a salt and calls the initialization function with provided arguments.
-        function _newInstanceWithSalt(uint256 version, bytes calldata arguments, bytes32 salt) internal virtual returns (bool success, address proxy); 
+        /// @notice Registers an implementation for some version.
+        function _registerImplementation(uint256 version_, address implementation_) internal virtual returns (bool success_);
 
-        /// @dev Calls the Proxy with arguments to perform the necessary initialization.
-        function _initializeInstance(address proxy, uint256 version, bytes calldata arguments) internal virtual returns (bool success); 
+        /// @notice Registers a migrator for between two versions. If `fromVersion_ == toVersion_`, migrator is an initializer.
+        function _registerMigrator(uint256 fromVersion_, uint256 toVersion_, address migrator_) internal virtual returns (bool success_);
 
-        /// @dev Registers a migrator contract to be used to optionally migrate between versions, when upgrading.
-        function _registerMigrator(uint256 fromVersion, uint256 toVersion, address migrator) internal virtual returns (bool success); 
+        /// @notice Upgrades a proxy to a new version of an implementation, with some migration arguments.
+        /// @dev    Inheritor should revert on `success_ = false`, since proxy can be set to new implementation, but failed to migrate.
+        function _upgradeInstance(address proxy_, uint256 toVersion_, bytes memory arguments_) internal virtual returns (bool success_);
 
-        /// @dev Updates the implementation used by a Proxy.
-        function _upgradeInstance(address proxy, uint256 toVersion, bytes calldata arguments) internal virtual returns (bool success); 
+        /// @notice Returns the deterministic address of a proxy given some salt.
+        function _getDeterministicProxyAddress(bytes32 salt_) internal virtual view returns (address deterministicProxyAddress_);
+
+        /// @notice Returns whether the account is currently a contract.
+        function _isContract(address account_) internal view returns (bool isContract_);
+
     }
-```
-
-`Proxy.sol`
-
-The Proxy contract that is deployed and manages storage. It saves both and `implementation` and the `factory` addresses to be able to execute transactions and upgrades.
-
-```js
-contract Proxy is SlotManipulatable {
-
-    /// @dev Storage slot with the address of the current factory. This is the keccak-256 hash of "FACTORY_SLOT".
-    bytes32 private constant FACTORY_SLOT = 0xf2db84db8157f5a01a257d644038e8929d5a62c9ffa8b736374913908897e5bb;
-
-    /// @dev Storage slot with the address of the current implementation. This is the keccak-256 hash of "IMPLEMENTATION_SLOT".
-    bytes32 private constant IMPLEMENTATION_SLOT = 0xf603533e14e17222e047634a2b3457fe346d27e294cedf9d21d74e5feea4a046;
-
-    /// @dev Function to be called right after deployment, to set the `implementation` and the `factory` addresses in storage.
-    function _setup() private; 
-
-    /// @dev Function to delegatecall all incoming functions to the `implementation` address.
-    fallback() payable external virtual; 
-
-}
 ```
 
 `SlotManipulatable.sol`
@@ -74,13 +59,39 @@ Helper contract that can manually modify storage when necessary (i.e., during a 
  contract SlotManipulatable {
 
     /// @dev Returns the value stored at the given slot.
-    function _getSlotValue(bytes32 slot) internal view returns (bytes32 value); 
+    function _getSlotValue(bytes32 slot_) internal view returns (bytes32 value_); 
 
     /// @dev Sets the value stored at the given slot.
-    function _setSlotValue(bytes32 slot, bytes32 value) internal; 
+    function _setSlotValue(bytes32 slot_, bytes32 value_) internal; 
 
     // @dev Returns the storage slot for a reference type.
-    function _getReferenceTypeSlot(bytes32 slot, bytes32 key) internal pure returns (bytes32 value); 
+    function _getReferenceTypeSlot(bytes32 slot_, bytes32 key_) internal pure returns (bytes32 value_); 
+
+}
+```
+
+`Proxied.sol`
+
+Contract that must be inherited by all implementation contracts in order for them to function properly with proxies.
+
+
+ ```js
+ contract Proxied {
+
+    /// @dev Delegatecalls to a migrator contract to manipulate storage during an inititalization or migration.
+    function _migrate(address migrator_, bytes calldata arguments_) internal virtual returns (bool success_);
+
+    /// @dev Sets the factory address in storage.
+    function _setFactory(address factory_) internal virtual returns (bool success_);
+
+    /// @dev Sets the implementation address in storage.
+    function _setImplementation(address implementation_) internal virtual returns (bool success_);
+
+    /// @dev Returns the factory address.
+    function _factory() internal view virtual returns (address factory_);
+
+    /// @dev Returns the implementation address.
+    function _implementation() internal view virtual returns (address implementation_)
 
 }
 ```
