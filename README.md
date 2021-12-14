@@ -24,23 +24,29 @@ Responsible for deploying new Proxy instances and triggering initialization and 
 ```js
     contract ProxyFactory {
 
-        /// @dev Registers a new implementation address attached to a version, which can be used with any uint256 versioning scheme.
-        function _registerImplementation(uint256 version_, address implementationAddress_) internal virtual returns (bool success_);
+        /// @notice Deploys a new proxy for some version, with some initialization arguments, using `create` (i.e. factory's nonce determines the address).
+        function _newInstance(uint256 version_, bytes memory arguments_) internal virtual returns (bool success_, address proxy_);
 
-        /// @dev Deploys a new Proxy instance and calls the initialization function with provided arguments.
-        function _newInstance(uint256 version_, bytes calldata arguments_) internal virtual returns (bool success_, address proxy_);
+        /// @notice Deploys a new proxy, with some initialization arguments, using `create2` (i.e. salt determines the address).
+        /// @dev    This factory needs to be IDefaultImplementationBeacon, since the proxy will pull its implementation from it.
+        function _newInstance(bytes memory arguments_, bytes32 salt_) internal virtual returns (bool success_, address proxy_);
 
-        /// @dev Deploys a new new Proxy instance at a specific address using a salt and calls the initialization function with provided arguments.
-        function _newInstanceWithSalt(uint256 version_, bytes calldata arguments_, bytes32 salt_) internal virtual returns (bool success_, address proxy_); 
+        /// @notice Registers an implementation for some version.
+        function _registerImplementation(uint256 version_, address implementation_) internal virtual returns (bool success_);
 
-        /// @dev Calls the Proxy with arguments to perform the necessary initialization.
-        function _initializeInstance(address proxy_, uint256 version_, bytes calldata arguments_) internal virtual returns (bool success_); 
+        /// @notice Registers a migrator for between two versions. If `fromVersion_ == toVersion_`, migrator is an initializer.
+        function _registerMigrator(uint256 fromVersion_, uint256 toVersion_, address migrator_) internal virtual returns (bool success_);
 
-        /// @dev Registers a migrator contract to be used to optionally migrate between versions, when upgrading.
-        function _registerMigrator(uint256 fromVersion_, uint256 toVersion_, address migrator_) internal virtual returns (bool success_); 
+        /// @notice Upgrades a proxy to a new version of an implementation, with some migration arguments.
+        /// @dev    Inheritor should revert on `success_ = false`, since proxy can be set to new implementation, but failed to migrate.
+        function _upgradeInstance(address proxy_, uint256 toVersion_, bytes memory arguments_) internal virtual returns (bool success_);
 
-        /// @dev Updates the implementation used by a Proxy.
-        function _upgradeInstance(address proxy_, uint256 toVersion_, bytes calldata arguments_) internal virtual returns (bool success_); 
+        /// @notice Returns the deterministic address of a proxy given some salt.
+        function _getDeterministicProxyAddress(bytes32 salt_) internal virtual view returns (address deterministicProxyAddress_);
+
+        /// @notice Returns whether the account is currently a contract.
+        function _isContract(address account_) internal view returns (bool isContract_);
+
     }
 ```
 
