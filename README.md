@@ -50,28 +50,6 @@ Responsible for deploying new Proxy instances and triggering initialization and 
     }
 ```
 
-`Proxy.sol`
-
-The Proxy contract that is deployed and manages storage. It saves both and `implementation` and the `factory` addresses to be able to execute transactions and upgrades.
-
-```js
-contract Proxy is SlotManipulatable {
-
-    /// @dev Storage slot with the address of the current factory. This is the keccak-256 hash of "FACTORY_SLOT".
-    bytes32 private constant FACTORY_SLOT = 0xf2db84db8157f5a01a257d644038e8929d5a62c9ffa8b736374913908897e5bb;
-
-    /// @dev Storage slot with the address of the current implementation. This is the keccak-256 hash of "IMPLEMENTATION_SLOT".
-    bytes32 private constant IMPLEMENTATION_SLOT = 0xf603533e14e17222e047634a2b3457fe346d27e294cedf9d21d74e5feea4a046;
-
-    /// @dev Function to be called right after deployment, to set the `implementation` and the `factory` addresses in storage.
-    function _setup() private; 
-
-    /// @dev Function to delegatecall all incoming functions to the `implementation` address.
-    fallback() payable external virtual; 
-
-}
-```
-
 `SlotManipulatable.sol`
 
 Helper contract that can manually modify storage when necessary (i.e., during a initialization/migration process)
@@ -87,6 +65,32 @@ Helper contract that can manually modify storage when necessary (i.e., during a 
 
     // @dev Returns the storage slot for a reference type.
     function _getReferenceTypeSlot(bytes32 slot_, bytes32 key_) internal pure returns (bytes32 value_); 
+
+}
+```
+
+`Proxied.sol`
+
+Contract that must be inherited by all implementation contracts in order for them to function properly with proxies.
+
+
+ ```js
+ contract Proxied {
+
+    /// @dev Delegatecalls to a migrator contract to manipulate storage during an inititalization or migration.
+    function _migrate(address migrator_, bytes calldata arguments_) internal virtual returns (bool success_);
+
+    /// @dev Sets the factory address in storage.
+    function _setFactory(address factory_) internal virtual returns (bool success_);
+
+    /// @dev Sets the implementation address in storage.
+    function _setImplementation(address implementation_) internal virtual returns (bool success_);
+
+    /// @dev Returns the factory address.
+    function _factory() internal view virtual returns (address factory_);
+
+    /// @dev Returns the implementation address.
+    function _implementation() internal view virtual returns (address implementation_)
 
 }
 ```
