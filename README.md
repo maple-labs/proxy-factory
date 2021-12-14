@@ -19,7 +19,8 @@ Set of base contracts to deploy and manage versions on chain, designed to be min
 
 `ProxyFactory.sol`
 
-Responsible for deploying new Proxy instances and triggering initialization and migration logic atomically. 
+Responsible for deploying new Proxy instances and triggering initialization and migration logic atomically.
+**NOTE: All factories that inherit ProxyFactory MUST also inherit IDefaultImpleemntationBeacon and implement `defaultImplementation` if the CREATE2 functionality of `_newInstance` is to be used.**
 
 ```js
     contract ProxyFactory {
