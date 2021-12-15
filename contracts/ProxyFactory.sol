@@ -144,13 +144,7 @@ contract ProxyFactory {
 
     /// @notice Returns whether the account is currently a contract.
     function _isContract(address account_) internal view returns (bool isContract_) {
-        uint256 size;
-
-        assembly {
-            size := extcodesize(account_)
-        }
-
-        return size != uint256(0);
+        return account_.code.length != uint256(0);
     }
 
 }
