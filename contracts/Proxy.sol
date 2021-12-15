@@ -28,13 +28,7 @@ contract Proxy is SlotManipulatable {
     fallback() payable external virtual {
         bytes32 implementation = _getSlotValue(IMPLEMENTATION_SLOT);
 
-        uint256 size;
-
-        assembly {
-            size := extcodesize(implementation)
-        }
-
-        require(size != uint256(0), "P:F:INVALID_IMPLEMENTATION");
+        require(address(uint160(uint256(implementation))).code.length != uint256(0), "P:F:INVALID_IMPLEMENTATION");
 
         assembly {
             calldatacopy(0, 0, calldatasize())
