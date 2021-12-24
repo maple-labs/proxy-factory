@@ -233,8 +233,8 @@ contract ProxyFactoryTests is DSTest {
 
         bytes32 salt = keccak256(abi.encodePacked("salt"));
 
-        assertEq(factory.getDeterministicProxyAddress(salt), 0x8D4Ab495177fBE2145fd15A9392966CC190FF5eC);
-        assertEq(factory.newInstance(new bytes(0), salt),    0x8D4Ab495177fBE2145fd15A9392966CC190FF5eC);
+        assertEq(factory.getDeterministicProxyAddress(salt), 0x045A1D5dF300FdfB7CE80Ed8397b46a4C634c508);
+        assertEq(factory.newInstance(new bytes(0), salt),    0x045A1D5dF300FdfB7CE80Ed8397b46a4C634c508);
     }
 
     function test_newInstance_withSaltAndInvalidInitializerArguments() external {

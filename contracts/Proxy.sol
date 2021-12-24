@@ -14,13 +14,19 @@ contract Proxy is SlotManipulatable {
     /// @dev Storage slot with the address of the current factory. `keccak256('eip1967.proxy.implementation') - 1`.
     bytes32 private constant IMPLEMENTATION_SLOT = bytes32(0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc);
 
+    /**
+     *  @dev   The constructor requires at least one of `factory_` or `implementation_`.
+     *         If an implementation is not provided, the factory is treated as an IDefaultImplementationBeacon to fetch the default implementation.
+     *  @param factory_        The address of a proxy factory, if any.
+     *  @param implementation_ The address of the implementation contract being proxied, if any.
+     */
     constructor(address factory_, address implementation_) {
         _setSlotValue(FACTORY_SLOT, bytes32(uint256(uint160(factory_))));
 
         // If the implementation is empty, fetch it from the factory, which can act as a beacon.
         address implementation = implementation_ == address(0) ? IDefaultImplementationBeacon(factory_).defaultImplementation() : implementation_;
 
-        require(implementation != address(0), "P:C:INVALID_IMPLEMENTATION");
+        require(implementation != address(0));
 
         _setSlotValue(IMPLEMENTATION_SLOT, bytes32(uint256(uint160(implementation))));
     }
@@ -28,7 +34,7 @@ contract Proxy is SlotManipulatable {
     fallback() payable external virtual {
         bytes32 implementation = _getSlotValue(IMPLEMENTATION_SLOT);
 
-        require(address(uint160(uint256(implementation))).code.length != uint256(0), "P:F:INVALID_IMPLEMENTATION");
+        require(address(uint160(uint256(implementation))).code.length != uint256(0));
 
         assembly {
             calldatacopy(0, 0, calldatasize())
