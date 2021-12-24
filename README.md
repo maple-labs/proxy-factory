@@ -9,7 +9,7 @@ Set of base contracts to deploy and manage versions on chain, designed to be min
 ### Features
 - **No interfaces:** Contracts only define internal functionality and do not expose any external interfaces. Implementers are encouraged to mix and match the internal functions to cater to their specific needs.
 
-- **Opt-In Upgrades:** Proxy contracts were designed to be upgraded individually. 
+- **Opt-In Upgrades:** Proxy contracts were designed to be upgraded individually.
 
 - **CREATE2:** Contracts can be deployed with CREATE or CREATE2 opcodes, allowing the option for Proxy contracts to be deployed with deterministic addresses.
 
@@ -25,27 +25,27 @@ Responsible for deploying new Proxy instances and triggering initialization and 
 ```js
     contract ProxyFactory {
 
-        /// @notice Deploys a new proxy for some version, with some initialization arguments, using `create` (i.e. factory's nonce determines the address).
+        /// @dev Deploys a new proxy for some version, with some initialization arguments, using `create` (i.e. factory's nonce determines the address).
         function _newInstance(uint256 version_, bytes memory arguments_) internal virtual returns (bool success_, address proxy_);
 
-        /// @notice Deploys a new proxy, with some initialization arguments, using `create2` (i.e. salt determines the address).
-        /// @dev    This factory needs to be IDefaultImplementationBeacon, since the proxy will pull its implementation from it.
+        /// @dev Deploys a new proxy, with some initialization arguments, using `create2` (i.e. salt determines the address).
+        ///      This factory needs to be IDefaultImplementationBeacon, since the proxy will pull its implementation from it.
         function _newInstance(bytes memory arguments_, bytes32 salt_) internal virtual returns (bool success_, address proxy_);
 
-        /// @notice Registers an implementation for some version.
+        /// @dev Registers an implementation for some version.
         function _registerImplementation(uint256 version_, address implementation_) internal virtual returns (bool success_);
 
-        /// @notice Registers a migrator for between two versions. If `fromVersion_ == toVersion_`, migrator is an initializer.
+        /// @dev Registers a migrator for between two versions. If `fromVersion_ == toVersion_`, migrator is an initializer.
         function _registerMigrator(uint256 fromVersion_, uint256 toVersion_, address migrator_) internal virtual returns (bool success_);
 
-        /// @notice Upgrades a proxy to a new version of an implementation, with some migration arguments.
-        /// @dev    Inheritor should revert on `success_ = false`, since proxy can be set to new implementation, but failed to migrate.
+        /// @dev Upgrades a proxy to a new version of an implementation, with some migration arguments.
+        ///      Inheritor should revert on `success_ = false`, since proxy can be set to new implementation, but failed to migrate.
         function _upgradeInstance(address proxy_, uint256 toVersion_, bytes memory arguments_) internal virtual returns (bool success_);
 
-        /// @notice Returns the deterministic address of a proxy given some salt.
+        /// @dev Returns the deterministic address of a proxy given some salt.
         function _getDeterministicProxyAddress(bytes32 salt_) internal virtual view returns (address deterministicProxyAddress_);
 
-        /// @notice Returns whether the account is currently a contract.
+        /// @dev Returns whether the account is currently a contract.
         function _isContract(address account_) internal view returns (bool isContract_);
 
     }
@@ -59,13 +59,13 @@ Helper contract that can manually modify storage when necessary (i.e., during a 
  contract SlotManipulatable {
 
     /// @dev Returns the value stored at the given slot.
-    function _getSlotValue(bytes32 slot_) internal view returns (bytes32 value_); 
+    function _getSlotValue(bytes32 slot_) internal view returns (bytes32 value_);
 
     /// @dev Sets the value stored at the given slot.
-    function _setSlotValue(bytes32 slot_, bytes32 value_) internal; 
+    function _setSlotValue(bytes32 slot_, bytes32 value_) internal;
 
     // @dev Returns the storage slot for a reference type.
-    function _getReferenceTypeSlot(bytes32 slot_, bytes32 key_) internal pure returns (bytes32 value_); 
+    function _getReferenceTypeSlot(bytes32 slot_, bytes32 key_) internal pure returns (bytes32 value_);
 
 }
 ```

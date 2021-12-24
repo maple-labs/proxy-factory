@@ -6,7 +6,7 @@ import { IProxied } from "./interfaces/IProxied.sol";
 import { Proxy } from "./Proxy.sol";
 
 /// @title A factory for Proxy contracts that proxy Proxied implementations.
-contract ProxyFactory {
+abstract contract ProxyFactory {
 
     mapping(uint256 => address) internal _implementationOf;
 
@@ -14,7 +14,7 @@ contract ProxyFactory {
 
     mapping(uint256 => mapping(uint256 => address)) internal _migratorForPath;
 
-    /// @notice Returns the implementation of `proxy_`.
+    /// @dev Returns the implementation of `proxy_`.
     function _getImplementationOfProxy(address proxy_) private view returns (bool success_, address implementation_) {
         bytes memory returnData;
         // Since `_getImplementationOfProxy` is a private function, no need to check `proxy_` is a contract.
@@ -22,7 +22,7 @@ contract ProxyFactory {
         implementation_ = abi.decode(returnData, (address));
     }
 
-    /// @notice Initializes `proxy_` using the initializer for `version_`, given some initialization arguments.
+    /// @dev Initializes `proxy_` using the initializer for `version_`, given some initialization arguments.
     function _initializeInstance(address proxy_, uint256 version_, bytes memory arguments_) private returns (bool success_) {
         // The migrator, where fromVersion == toVersion, is an initializer.
         address initializer = _migratorForPath[version_][version_];
@@ -35,7 +35,7 @@ contract ProxyFactory {
         ( success_, ) = proxy_.call(abi.encodeWithSelector(IProxied.migrate.selector, initializer, arguments_));
     }
 
-    /// @notice Deploys a new proxy for some version, with some initialization arguments, using `create` (i.e. factory's nonce determines the address).
+    /// @dev Deploys a new proxy for some version, with some initialization arguments, using `create` (i.e. factory's nonce determines the address).
     function _newInstance(uint256 version_, bytes memory arguments_) internal virtual returns (bool success_, address proxy_) {
         address implementation = _implementationOf[version_];
 
@@ -45,12 +45,12 @@ contract ProxyFactory {
         success_ = _initializeInstance(proxy_, version_, arguments_);
     }
 
-    /// @notice Deploys a new proxy, with some initialization arguments, using `create2` (i.e. salt determines the address).
-    /// @dev    This factory needs to be IDefaultImplementationBeacon, since the proxy will pull its implementation from it.
+    /// @dev Deploys a new proxy, with some initialization arguments, using `create2` (i.e. salt determines the address).
+    ///      This factory needs to be IDefaultImplementationBeacon, since the proxy will pull its implementation from it.
     function _newInstance(bytes memory arguments_, bytes32 salt_) internal virtual returns (bool success_, address proxy_) {
         proxy_ = address(new Proxy{ salt: salt_ }(address(this), address(0)));
 
-        // Fetch the implementation from the proxy. Don't care about success, since the version of the implementation will be checked in the nest step.
+        // Fetch the implementation from the proxy. Don't care about success, since the version of the implementation will be checked in the next step.
         ( , address implementation ) = _getImplementationOfProxy(proxy_);
 
         // Get the version of the implementation.
@@ -60,7 +60,7 @@ contract ProxyFactory {
         success_ = (version != uint256(0)) && _initializeInstance(proxy_, version, arguments_);
     }
 
-    /// @notice Registers an implementation for some version.
+    /// @dev Registers an implementation for some version.
     function _registerImplementation(uint256 version_, address implementation_) internal virtual returns (bool success_) {
         // Version 0 is not allowed since its the default value of all _versionOf[implementation_].
         // Implementation cannot already be registered and cannot be empty account (and thus also not address(0)).
@@ -78,7 +78,7 @@ contract ProxyFactory {
         return true;
     }
 
-    /// @notice Registers a migrator for between two versions. If `fromVersion_ == toVersion_`, migrator is an initializer.
+    /// @dev Registers a migrator for between two versions. If `fromVersion_ == toVersion_`, migrator is an initializer.
     function _registerMigrator(uint256 fromVersion_, uint256 toVersion_, address migrator_) internal virtual returns (bool success_) {
         // Version 0 is invalid.
         if (fromVersion_ == uint256(0) || toVersion_ == uint256(0)) return false;
@@ -91,8 +91,8 @@ contract ProxyFactory {
         return true;
     }
 
-    /// @notice Upgrades a proxy to a new version of an implementation, with some migration arguments.
-    /// @dev    Inheritor should revert on `success_ = false`, since proxy can be set to new implementation, but failed to migrate.
+    /// @dev Upgrades a proxy to a new version of an implementation, with some migration arguments.
+    ///      Inheritor should revert on `success_ = false`, since proxy can be set to new implementation, but failed to migrate.
     function _upgradeInstance(address proxy_, uint256 toVersion_, bytes memory arguments_) internal virtual returns (bool success_) {
         // Check that the proxy is currently a contract, just once, ahead of the 3 times it will be low-level-called.
         if (!_isContract(proxy_)) return false;
@@ -123,7 +123,7 @@ contract ProxyFactory {
         ( success_, ) = proxy_.call(abi.encodeWithSelector(IProxied.migrate.selector, migrator, arguments_));
     }
 
-    /// @notice Returns the deterministic address of a proxy given some salt.
+    /// @dev Returns the deterministic address of a proxy given some salt.
     function _getDeterministicProxyAddress(bytes32 salt_) internal virtual view returns (address deterministicProxyAddress_) {
         // See https://docs.soliditylang.org/en/v0.8.7/control-structures.html#salted-contract-creations-create2
         return address(
@@ -142,7 +142,7 @@ contract ProxyFactory {
         );
     }
 
-    /// @notice Returns whether the account is currently a contract.
+    /// @dev Returns whether the account is currently a contract.
     function _isContract(address account_) internal view returns (bool isContract_) {
         return account_.code.length != uint256(0);
     }

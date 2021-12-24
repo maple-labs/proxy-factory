@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.7;
 
-contract SlotManipulatable {
+abstract contract SlotManipulatable {
 
     function _getReferenceTypeSlot(bytes32 slot_, bytes32 key_) internal pure returns (bytes32 value_) {
         return keccak256(abi.encodePacked(key_, slot_));

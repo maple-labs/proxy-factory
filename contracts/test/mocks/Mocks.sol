@@ -4,7 +4,7 @@ pragma solidity ^0.8.7;
 import { IDefaultImplementationBeacon } from "../../interfaces/IDefaultImplementationBeacon.sol";
 import { IProxied }                     from "../../interfaces/IProxied.sol";
 
-import { Proxied }           from "../../Proxied.sol";
+import { ProxiedInternals }  from "../../ProxiedInternals.sol";
 import { ProxyFactory }      from "../../ProxyFactory.sol";
 import { SlotManipulatable } from "../../SlotManipulatable.sol";
 
@@ -110,7 +110,7 @@ interface IMockImplementationV1 is IProxied {
 
 }
 
-contract MockImplementationV1 is IProxied, Proxied, IMockImplementationV1 {
+contract MockImplementationV1 is IProxied, IMockImplementationV1, ProxiedInternals {
 
     // Some "Nothing Up My Sleeve" Slot
     bytes32 private constant DELTA_SLOT = 0x1111111111111111111111111111111111111111111111111111111111111111;
@@ -235,7 +235,7 @@ interface IMockImplementationV2 is IProxied {
 
 }
 
-contract MockImplementationV2 is IProxied, Proxied, IMockImplementationV2 {
+contract MockImplementationV2 is IProxied, IMockImplementationV2, ProxiedInternals {
 
     // Same "Nothing Up My Sleeve" Slot as in V1
     bytes32 private constant DERBY_SLOT = 0x1111111111111111111111111111111111111111111111111111111111111111;
