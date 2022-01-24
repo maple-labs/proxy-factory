@@ -23,32 +23,32 @@ Responsible for deploying new Proxy instances and triggering initialization and 
 **NOTE: All factories that inherit ProxyFactory MUST also inherit IDefaultImpleemntationBeacon and implement `defaultImplementation` if the CREATE2 functionality of `_newInstance` is to be used.**
 
 ```js
-    contract ProxyFactory {
+contract ProxyFactory {
 
-        /// @dev Deploys a new proxy for some version, with some initialization arguments, using `create` (i.e. factory's nonce determines the address).
-        function _newInstance(uint256 version_, bytes memory arguments_) internal virtual returns (bool success_, address proxy_);
+    /// @dev Deploys a new proxy for some version, with some initialization arguments, using `create` (i.e. factory's nonce determines the address).
+    function _newInstance(uint256 version_, bytes memory arguments_) internal virtual returns (bool success_, address proxy_);
 
-        /// @dev Deploys a new proxy, with some initialization arguments, using `create2` (i.e. salt determines the address).
-        ///      This factory needs to be IDefaultImplementationBeacon, since the proxy will pull its implementation from it.
-        function _newInstance(bytes memory arguments_, bytes32 salt_) internal virtual returns (bool success_, address proxy_);
+    /// @dev Deploys a new proxy, with some initialization arguments, using `create2` (i.e. salt determines the address).
+    ///      This factory needs to be IDefaultImplementationBeacon, since the proxy will pull its implementation from it.
+    function _newInstance(bytes memory arguments_, bytes32 salt_) internal virtual returns (bool success_, address proxy_);
 
-        /// @dev Registers an implementation for some version.
-        function _registerImplementation(uint256 version_, address implementation_) internal virtual returns (bool success_);
+    /// @dev Registers an implementation for some version.
+    function _registerImplementation(uint256 version_, address implementation_) internal virtual returns (bool success_);
 
-        /// @dev Registers a migrator for between two versions. If `fromVersion_ == toVersion_`, migrator is an initializer.
-        function _registerMigrator(uint256 fromVersion_, uint256 toVersion_, address migrator_) internal virtual returns (bool success_);
+    /// @dev Registers a migrator for between two versions. If `fromVersion_ == toVersion_`, migrator is an initializer.
+    function _registerMigrator(uint256 fromVersion_, uint256 toVersion_, address migrator_) internal virtual returns (bool success_);
 
-        /// @dev Upgrades a proxy to a new version of an implementation, with some migration arguments.
-        ///      Inheritor should revert on `success_ = false`, since proxy can be set to new implementation, but failed to migrate.
-        function _upgradeInstance(address proxy_, uint256 toVersion_, bytes memory arguments_) internal virtual returns (bool success_);
+    /// @dev Upgrades a proxy to a new version of an implementation, with some migration arguments.
+    ///      Inheritor should revert on `success_ = false`, since proxy can be set to new implementation, but failed to migrate.
+    function _upgradeInstance(address proxy_, uint256 toVersion_, bytes memory arguments_) internal virtual returns (bool success_);
 
-        /// @dev Returns the deterministic address of a proxy given some salt.
-        function _getDeterministicProxyAddress(bytes32 salt_) internal virtual view returns (address deterministicProxyAddress_);
+    /// @dev Returns the deterministic address of a proxy given some salt.
+    function _getDeterministicProxyAddress(bytes32 salt_) internal virtual view returns (address deterministicProxyAddress_);
 
-        /// @dev Returns whether the account is currently a contract.
-        function _isContract(address account_) internal view returns (bool isContract_);
+    /// @dev Returns whether the account is currently a contract.
+    function _isContract(address account_) internal view returns (bool isContract_);
 
-    }
+}
 ```
 
 `SlotManipulatable.sol`
@@ -107,7 +107,7 @@ dapp update
 - To run all tests: `make test` (runs `./test.sh`)
 - To run a specific test function: `./test.sh -t <test_name>` (e.g. `./test.sh test_composability`)
 
-This project was built using <a href="https://github.com/dapphub/dapptools">dapptools</a>
+This project was built using <a href="https://github.com/dapphub/dapptools">dapptools</a>.
 
 ## Security
 
