@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.7;
 
-import { DSTest } from "../../modules/ds-test/src/test.sol";
+import { TestUtils } from "../../modules/contract-test-utils/contracts/test.sol";
 
 import { SlotManipulatable }  from "../SlotManipulatable.sol";
 
@@ -31,7 +31,7 @@ contract StorageContract is SlotManipulatable {
 
 }
 
-contract SlotManipulatableTests is DSTest {
+contract SlotManipulatableTests is TestUtils {
 
     StorageContract storageContract;
 
