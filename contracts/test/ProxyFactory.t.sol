@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.7;
 
-import { DSTest } from "../../modules/ds-test/src/test.sol";
+import { TestUtils } from "../../modules/contract-test-utils/contracts/test.sol";
 
 import { Proxy } from "../Proxy.sol";
 
@@ -19,7 +19,7 @@ import {
     ProxyWithIncorrectCode
 } from "./mocks/Mocks.sol";
 
-contract ProxyFactoryTests is DSTest {
+contract ProxyFactoryTests is TestUtils {
 
     /************************************/
     /*** registerImplementation Tests ***/
