@@ -5,6 +5,8 @@ import { IProxied } from "./interfaces/IProxied.sol";
 
 import { Proxy } from "./Proxy.sol";
 
+import { console } from "../../../../contract-test-utils/contracts/log.sol";
+
 /// @title A factory for Proxy contracts that proxy Proxied implementations.
 abstract contract ProxyFactory {
 
@@ -23,31 +25,36 @@ abstract contract ProxyFactory {
     }
 
     /// @dev Initializes `proxy_` using the initializer for `version_`, given some initialization arguments.
-    function _initializeInstance(address proxy_, uint256 version_, bytes memory arguments_) private returns (bool success_) {
+    function _initializeInstance(address proxy_, uint256 version_, bytes memory arguments_) private returns (bool success_, bytes memory data_) {
         // The migrator, where fromVersion == toVersion, is an initializer.
         address initializer = _migratorForPath[version_][version_];
 
+        bytes memory return_;
         // If there is no initializer, then no initialization is necessary, so long as no initialization arguments were provided.
-        if (initializer == address(0)) return arguments_.length == uint256(0);
+        if (initializer == address(0)) return ( arguments_.length == uint256(0), return_);
 
         // Call the migrate function on the proxy, passing any initialization arguments.
         // Since `_initializeInstance` is a private function, no need to check `proxy_` is a contract.
-        ( success_, ) = proxy_.call(abi.encodeWithSelector(IProxied.migrate.selector, initializer, arguments_));
+        ( success_, data_) = proxy_.call(abi.encodeWithSelector(IProxied.migrate.selector, initializer, arguments_));
+        console.log("SUCCESS", success_);
+        console.log("data_", string(data_));
+
     }
 
     /// @dev Deploys a new proxy for some version, with some initialization arguments, using `create` (i.e. factory's nonce determines the address).
-    function _newInstance(uint256 version_, bytes memory arguments_) internal virtual returns (bool success_, address proxy_) {
+    function _newInstance(uint256 version_, bytes memory arguments_) internal virtual returns (bool success_, address proxy_, bytes memory data_) {
         address implementation = _implementationOf[version_];
 
-        if (implementation == address(0)) return (false, address(0));
+        bytes memory return_;
+        if (implementation == address(0)) return (false, address(0), return_);
 
         proxy_   = address(new Proxy(address(this), implementation));
-        success_ = _initializeInstance(proxy_, version_, arguments_);
+        ( success_, data_ ) = _initializeInstance(proxy_, version_, arguments_);
     }
 
     /// @dev Deploys a new proxy, with some initialization arguments, using `create2` (i.e. salt determines the address).
     ///      This factory needs to be IDefaultImplementationBeacon, since the proxy will pull its implementation from it.
-    function _newInstance(bytes memory arguments_, bytes32 salt_) internal virtual returns (bool success_, address proxy_) {
+    function _newInstance(bytes memory arguments_, bytes32 salt_) internal virtual returns (bool success_, address proxy_, bytes memory data_) {
         proxy_ = address(new Proxy{ salt: salt_ }(address(this), address(0)));
 
         // Fetch the implementation from the proxy. Don't care about success, since the version of the implementation will be checked in the next step.
@@ -56,8 +63,9 @@ abstract contract ProxyFactory {
         // Get the version of the implementation.
         uint256 version = _versionOf[implementation];
 
+        bytes memory return_;
         // Successful if version is nonzero (i.e. implementation fetched successfully from proxy) and initializing the instance succeeds.
-        success_ = (version != uint256(0)) && _initializeInstance(proxy_, version, arguments_);
+        ( success_, data_ ) = (version != uint256(0)) ? (version != uint256(0), return_) : _initializeInstance(proxy_, version, arguments_);
     }
 
     /// @dev Registers an implementation for some version.
