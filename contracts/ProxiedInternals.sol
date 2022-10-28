@@ -13,16 +13,16 @@ abstract contract ProxiedInternals is SlotManipulatable {
     bytes32 private constant IMPLEMENTATION_SLOT = bytes32(0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc);
 
     /// @dev Delegatecalls to a migrator contract to manipulate storage during an initialization or migration.
-    function _migrate(address migrator_, bytes calldata arguments_) internal virtual returns (bool success_) {
+    function _migrate(address migrator_, bytes calldata arguments_) internal virtual returns (bool success_, bytes memory result_) {
         uint256 size;
 
         assembly {
             size := extcodesize(migrator_)
         }
 
-        if (size == uint256(0)) return false;
+        if (size == uint256(0)) return (false, bytes(""));
 
-        ( success_, ) = migrator_.delegatecall(arguments_);
+        ( success_, result_ ) = migrator_.delegatecall(arguments_);
     }
 
     /// @dev Sets the factory address in storage.
