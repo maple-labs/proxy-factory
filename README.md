@@ -20,7 +20,7 @@ Set of base contracts to deploy and manage versions on chain, designed to be min
 `ProxyFactory.sol`
 
 Responsible for deploying new Proxy instances and triggering initialization and migration logic atomically.
-**NOTE: All factories that inherit ProxyFactory MUST also inherit IDefaultImpleemntationBeacon and implement `defaultImplementation` if the CREATE2 functionality of `_newInstance` is to be used.**
+**NOTE: All factories that inherit ProxyFactory MUST also inherit IDefaultImplementationBeacon and implement `defaultImplementation` if the CREATE2 functionality of `_newInstance` is to be used.**
 
 ```js
 contract ProxyFactory {
@@ -78,7 +78,7 @@ Contract that must be inherited by all implementation contracts in order for the
  ```js
  contract Proxied {
 
-    /// @dev Delegatecalls to a migrator contract to manipulate storage during an inititalization or migration.
+    /// @dev Delegatecalls to a migrator contract to manipulate storage during an initialization or migration.
     function _migrate(address migrator_, bytes calldata arguments_) internal virtual returns (bool success_);
 
     /// @dev Sets the factory address in storage.
@@ -96,14 +96,15 @@ Contract that must be inherited by all implementation contracts in order for the
 }
 ```
 
-## Testing and Development
-#### Setup
+## Setup
+
 ```sh
-git clone git@github.com:maple-labs/maple-core.git
-cd maple-core
+git clone git@github.com:maple-labs/proxy-factory.git
+cd proxy-factory
 dapp update
 ```
-#### Running Tests
+## Running Tests
+
 - To run all tests: `make test` (runs `./test.sh`)
 - To run a specific test function: `./test.sh -t <test_name>` (e.g. `./test.sh test_composability`)
 
@@ -123,16 +124,10 @@ The code is designed to be highly flexible and extensible, meaning that logic th
 
 For all information related to the ongoing bug bounty for these contracts run by [Immunefi](https://immunefi.com/), please visit this [site](https://immunefi.com/bounty/maple/).
 
-| Severity of Finding | Payout |
-|---|---|
-| Critical | $50,000 |
-| High | $25,000 |
-| Medium | $1,000 |
-
 ## About Maple
 Maple is a decentralized corporate credit market. Maple provides capital to institutional borrowers through globally accessible fixed-income yield opportunities.
 
-For all technical documentation related to the Maple protocol, please refer to the GitHub [wiki](https://github.com/maple-labs/maple-core/wiki).
+For all technical documentation related to the Maple protocol, please refer to the GitHub [wiki](https://github.com/maple-labs/maple-core-v2/wiki).
 
 ---
 
