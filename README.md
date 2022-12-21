@@ -78,7 +78,7 @@ Contract that must be inherited by all implementation contracts in order for the
  ```js
  contract Proxied {
 
-    /// @dev Delegatecalls to a migrator contract to manipulate storage during an inititalization or migration.
+    /// @dev Delegatecalls to a migrator contract to manipulate storage during an initialization or migration.
     function _migrate(address migrator_, bytes calldata arguments_) internal virtual returns (bool success_);
 
     /// @dev Sets the factory address in storage.
@@ -96,8 +96,7 @@ Contract that must be inherited by all implementation contracts in order for the
 }
 ```
 
-## Testing and Development
-#### Setup
+## Setup
 This project was built using [Foundry](https://book.getfoundry.sh/). Refer to installation instructions [here](https://github.com/foundry-rs/foundry#installation).
 
 ```sh
