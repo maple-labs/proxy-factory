@@ -20,7 +20,7 @@ Set of base contracts to deploy and manage versions on chain, designed to be min
 `ProxyFactory.sol`
 
 Responsible for deploying new Proxy instances and triggering initialization and migration logic atomically.
-**NOTE: All factories that inherit ProxyFactory MUST also inherit IDefaultImpleemntationBeacon and implement `defaultImplementation` if the CREATE2 functionality of `_newInstance` is to be used.**
+**NOTE: All factories that inherit ProxyFactory MUST also inherit IDefaultImplementationBeacon and implement `defaultImplementation` if the CREATE2 functionality of `_newInstance` is to be used.**
 
 ```js
 contract ProxyFactory {
@@ -98,16 +98,17 @@ Contract that must be inherited by all implementation contracts in order for the
 
 ## Testing and Development
 #### Setup
+This project was built using [Foundry](https://book.getfoundry.sh/). Refer to installation instructions [here](https://github.com/foundry-rs/foundry#installation).
+
 ```sh
-git clone git@github.com:maple-labs/maple-core.git
-cd maple-core
+git clone git@github.com:maple-labs/proxy-factory.git
+cd proxy-factory
 forge install
 ```
-#### Running Tests
-- To run all tests: `make test` (runs `./test.sh`)
-- To run a specific test function: `./test.sh -t <test_name>` (e.g. `./test.sh test_composability`)
+## Running Tests
 
-This project was built using <a href="https://github.com/dapphub/dapptools">dapptools</a>.
+- To run all tests: `forge test`
+- To run specific tests: `forge test --match <test_name>`
 
 ## Security
 
