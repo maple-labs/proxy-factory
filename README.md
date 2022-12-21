@@ -97,17 +97,18 @@ Contract that must be inherited by all implementation contracts in order for the
 ```
 
 ## Setup
-This project was built using [Foundry](https://book.getfoundry.sh/). Refer to installation instructions [here](https://github.com/foundry-rs/foundry#installation).
 
 ```sh
 git clone git@github.com:maple-labs/proxy-factory.git
 cd proxy-factory
-forge install
+dapp update
 ```
 ## Running Tests
 
-- To run all tests: `forge test`
-- To run specific tests: `forge test --match <test_name>`
+- To run all tests: `make test` (runs `./test.sh`)
+- To run a specific test function: `./test.sh -t <test_name>` (e.g. `./test.sh test_composability`)
+
+This project was built using <a href="https://github.com/dapphub/dapptools">dapptools</a>.
 
 ## Security
 
