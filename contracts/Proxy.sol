@@ -16,7 +16,8 @@ contract Proxy is SlotManipulatable {
 
     /**
      *  @dev   The constructor requires at least one of `factory_` or `implementation_`.
-     *         If an implementation is not provided, the factory is treated as an IDefaultImplementationBeacon to fetch the default implementation.
+     *         If an implementation is not provided, the factory is treated as an IDefaultImplementationBeacon
+     *         to fetch the default implementation.
      *  @param factory_        The address of a proxy factory, if any.
      *  @param implementation_ The address of the implementation contract being proxied, if any.
      */
@@ -24,7 +25,9 @@ contract Proxy is SlotManipulatable {
         _setSlotValue(FACTORY_SLOT, bytes32(uint256(uint160(factory_))));
 
         // If the implementation is empty, fetch it from the factory, which can act as a beacon.
-        address implementation = implementation_ == address(0) ? IDefaultImplementationBeacon(factory_).defaultImplementation() : implementation_;
+        address implementation = implementation_ == address(0)
+            ? IDefaultImplementationBeacon(factory_).defaultImplementation()
+            : implementation_;
 
         require(implementation != address(0));
 

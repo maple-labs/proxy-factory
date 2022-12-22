@@ -35,7 +35,8 @@ abstract contract ProxyFactory {
         ( success_, ) = proxy_.call(abi.encodeWithSelector(IProxied.migrate.selector, initializer, arguments_));
     }
 
-    /// @dev Deploys a new proxy for some version, with some initialization arguments, using `create` (i.e. factory's nonce determines the address).
+    /// @dev Deploys a new proxy for some version, with some initialization arguments,
+    ///      using `create` (i.e. factory's nonce determines the address).
     function _newInstance(uint256 version_, bytes memory arguments_) internal virtual returns (bool success_, address proxy_) {
         address implementation = _implementationOf[version_];
 
@@ -50,7 +51,8 @@ abstract contract ProxyFactory {
     function _newInstance(bytes memory arguments_, bytes32 salt_) internal virtual returns (bool success_, address proxy_) {
         proxy_ = address(new Proxy{ salt: salt_ }(address(this), address(0)));
 
-        // Fetch the implementation from the proxy. Don't care about success, since the version of the implementation will be checked in the next step.
+        // Fetch the implementation from the proxy. Don't care about success,
+        // since the version of the implementation will be checked in the next step.
         ( , address implementation ) = _getImplementationOfProxy(proxy_);
 
         // Get the version of the implementation.

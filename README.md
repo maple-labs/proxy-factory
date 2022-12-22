@@ -4,7 +4,11 @@
 
 **DISCLAIMER: Please do not use in production without taking the appropriate steps to ensure maximum security.**
 
-Set of base contracts to deploy and manage versions on chain, designed to be minimally opinionated, extensible and gas-efficient. These contracts were built to provide the necessary features to be reused across multiple projects, both within Maple and externally.
+## Overview
+
+Set of base contracts to deploy and manage proxied contracts and implementation versions on chain, designed to be minimally opinionated, extensible and gas-efficient. These contracts were built to provide the necessary features to be reused across multiple projects, both within Maple and externally.
+
+See [`maple-labs/maple-proxy-factory`](https://github.com/maple-labs/maple-proxy-factory) for an example on how to inherit and use for custom applications for factories and proxies.
 
 ### Features
 - **No interfaces:** Contracts only define internal functionality and do not expose any external interfaces. Implementers are encouraged to mix and match the internal functions to cater to their specific needs.
@@ -98,23 +102,25 @@ Contract that must be inherited by all implementation contracts in order for the
 
 ## Setup
 
+This project was built using [dapptools](https://github.com/dapphub/dapptools).
+
 ```sh
 git clone git@github.com:maple-labs/proxy-factory.git
 cd proxy-factory
 dapp update
 ```
+
 ## Running Tests
 
 - To run all tests: `make test` (runs `./test.sh`)
 - To run a specific test function: `./test.sh -t <test_name>` (e.g. `./test.sh test_composability`)
-
-This project was built using <a href="https://github.com/dapphub/dapptools">dapptools</a>.
 
 ## Security
 
 The code is designed to be highly flexible and extensible, meaning that logic that is usually part of these functions (e.g., access controls) was not included. Therefore **it is strongly advised that these contracts be implemented with proper sanity checks, access controls and any extra logic necessary for security.**
 
 ## Audit Reports
+
 | Auditor | Report link |
 |---|---|
 | Trail of Bits | [ToB - Dec 28, 2021](https://docs.google.com/viewer?url=https://github.com/maple-labs/maple-core/files/7847684/Maple.Finance.-.Final.Report_v3.pdf) |
