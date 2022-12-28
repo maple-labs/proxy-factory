@@ -15,15 +15,14 @@ import {
     MockInitializerV1,
     MockInitializerV2,
     MockMigratorV1ToV2,
-    MockMigratorV1ToV2WithNoArgs,
-    ProxyWithIncorrectCode
+    MockMigratorV1ToV2WithNoArgs
 } from "./mocks/Mocks.sol";
 
 contract ProxyFactoryTests is TestUtils {
 
-    /************************************/
-    /*** registerImplementation Tests ***/
-    /************************************/
+    /**************************************************************************************************************************************/
+    /*** `registerImplementation` Tests                                                                                                 ***/
+    /**************************************************************************************************************************************/
 
     function test_registerImplementation() external {
         MockFactory          factory        = new MockFactory();
@@ -70,9 +69,9 @@ contract ProxyFactoryTests is TestUtils {
         try factory.registerImplementation(2, address(implementation)) { assertTrue(false, "Able to register duplicate implementation"); } catch { }
     }
 
-    /*************************/
-    /*** newInstance Tests ***/
-    /*************************/
+    /**************************************************************************************************************************************/
+    /*** `newInstance` Tests                                                                                                            ***/
+    /**************************************************************************************************************************************/
 
     function test_newInstance_withNoInitialization() external {
         MockFactory          factory        = new MockFactory();
@@ -272,11 +271,11 @@ contract ProxyFactoryTests is TestUtils {
         factory.newInstance(new bytes(0), salt);
     }
 
-    /******************************/
-    /*** registerMigrator Tests ***/
-    /******************************/
+    /**************************************************************************************************************************************/
+    /*** `registerMigrator` Tests                                                                                                       ***/
+    /**************************************************************************************************************************************/
 
-    // TODO: Successful registerMigrator
+    // TODO: Successful `registerMigrator`
 
     function testFail_registerMigrator_withInvalidMigrator() external {
         (new MockFactory()).registerMigrator(1, 2, address(1));
@@ -337,9 +336,9 @@ contract ProxyFactoryTests is TestUtils {
         assertEq(IMockImplementationV2(proxy).getViewable(), 1414);
     }
 
-    /*****************************/
-    /*** upgradeInstance Tests ***/
-    /*****************************/
+    /**************************************************************************************************************************************/
+    /*** `upgradeInstance` Tests                                                                                                        ***/
+    /**************************************************************************************************************************************/
 
     function test_upgradeInstance_withMigrationArgs() external {
         MockFactory          factory          = new MockFactory();
@@ -501,9 +500,9 @@ contract ProxyFactoryTests is TestUtils {
         assertEq(IMockImplementationV2(proxy).implementation(), address(implementationV2));
     }
 
-    /***************************/
-    /*** Miscellaneous Tests ***/
-    /***************************/
+    /**************************************************************************************************************************************/
+    /*** Miscellaneous Tests                                                                                                            ***/
+    /**************************************************************************************************************************************/
 
     function test_composability() external {
         MockFactory          factory        = new MockFactory();
