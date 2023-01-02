@@ -4,3 +4,4 @@ hevm*
 artifacts/*
 docs/*
 metadata.json
+.git/
